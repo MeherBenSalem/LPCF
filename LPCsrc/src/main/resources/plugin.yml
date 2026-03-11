@@ -1,0 +1,24 @@
+name: LuckPermsChatFormatterFolia
+version: '${version}'
+main: io.nightbeam.LPCF.LuckPermsChatFormatterFolia
+api-version: '1.21'
+folia-supported: true
+authors: [NightBeam]
+depend: [LuckPerms]
+softdepend: [PlaceholderAPI]
+description: Folia-compatible LuckPerms chat formatter with MiniMessage support.
+commands:
+  lpcf:
+    description: Reload LPCF configuration.
+    permission: lpcf.reload
+    usage: "Usage: /lpcf reload"
+permissions:
+  lpcf.reload:
+    description: Allows reloading the LPCF configuration.
+    default: op
+  lpcf.colorcodes:
+    description: Allows MiniMessage formatting in chat messages.
+    default: false
+  lpcf.itemplaceholder:
+    description: Allows using [ITEM] in chat.
+    default: true
