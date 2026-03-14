@@ -21,6 +21,8 @@ import java.util.regex.Pattern;
 public final class ChatFormatterService {
 
     private static final Pattern ITEM_PATTERN = Pattern.compile("\\[item]", Pattern.CASE_INSENSITIVE);
+    private static final Pattern NAME_TOKEN_PATTERN = Pattern.compile(Pattern.quote("__LPCF_NAME__"));
+    private static final Pattern DISPLAY_NAME_TOKEN_PATTERN = Pattern.compile(Pattern.quote("__LPCF_DISPLAYNAME__"));
 
     private final LuckPermsChatFormatterFolia plugin;
     private final MiniMessage miniMessage;
@@ -30,12 +32,14 @@ public final class ChatFormatterService {
         this.miniMessage = MiniMessage.miniMessage();
     }
 
-    public Component formatChatMessage(Player player, Component message) {
+    public Component formatChatMessage(Player player, Component sourceDisplayName, Component message) {
         PluginConfig config = plugin.pluginConfig();
         CachedMetaData metaData = plugin.luckPerms().getPlayerAdapter(Player.class).getMetaData(player);
 
         String group = LuckPermsUtil.primaryGroup(metaData);
         String format = resolveFormat(group, config);
+        final String nameToken = "__LPCF_NAME__";
+        final String displayNameToken = "__LPCF_DISPLAYNAME__";
 
         String rawMessage = PlainTextComponentSerializer.plainText().serialize(message);
         rawMessage = player.hasPermission("lpcf.colorcodes")
@@ -48,8 +52,8 @@ public final class ChatFormatterService {
                 .replace("{prefixes}", MiniMessageUtil.normalize(LuckPermsUtil.joinedPrefixes(metaData)))
                 .replace("{suffixes}", MiniMessageUtil.normalize(LuckPermsUtil.joinedSuffixes(metaData)))
                 .replace("{world}", player.getWorld().getName())
-                .replace("{name}", player.getName())
-                .replace("{displayname}", PlainTextComponentSerializer.plainText().serialize(player.displayName()))
+                .replace("{name}", nameToken)
+                .replace("{displayname}", displayNameToken)
                 .replace("{username-color}", MiniMessageUtil.normalize(LuckPermsUtil.metaValue(metaData, "username-color")))
                 .replace("{message-color}", MiniMessageUtil.normalize(LuckPermsUtil.metaValue(metaData, "message-color")))
                 .replace("{message}", rawMessage);
@@ -59,6 +63,18 @@ public final class ChatFormatterService {
         }
 
         Component rendered = miniMessage.deserialize(resolved);
+        Component fallbackName = Component.text(player.getName());
+        Component finalDisplayName = sourceDisplayName == null ? fallbackName : sourceDisplayName;
+
+        rendered = rendered.replaceText(TextReplacementConfig.builder()
+            .match(NAME_TOKEN_PATTERN)
+            .replacement(finalDisplayName)
+            .build());
+
+        rendered = rendered.replaceText(TextReplacementConfig.builder()
+            .match(DISPLAY_NAME_TOKEN_PATTERN)
+            .replacement(finalDisplayName)
+            .build());
 
         if (config.useItemPlaceholder() && player.hasPermission("lpcf.itemplaceholder")) {
             rendered = applyItemPlaceholder(rendered, player);
