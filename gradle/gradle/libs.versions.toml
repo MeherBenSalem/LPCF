@@ -1,0 +1,10 @@
+[versions]
+hikaricp = "6.3.0"
+minecraft = "1.21.4"
+placeholderapi = "2.11.6"
+luckperms = "5.4"
+
+[libraries]
+hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
+placeholderapi = { module = "me.clip:placeholderapi", version.ref = "placeholderapi" }
+luckperms = { module = "net.luckperms:api", version.ref = "luckperms" }

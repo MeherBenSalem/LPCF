@@ -1,10 +1,11 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'io.github.goooler.shadow' version '8.1.8'
+    id "io.papermc.paperweight.userdev" version "2.0.0-beta.17"
 }
 
 group = 'io.nightbeam'
-version = '1.0.1'
+version = '1.1.0'
 
 repositories {
     mavenCentral()
@@ -23,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    compileOnly "io.papermc.paper:paper-api:$paper"
+    paperweight.paperDevBundle("$paper")
     compileOnly "net.luckperms:api:$luckpermsapi"
     compileOnly "me.clip:placeholderapi:$papi"
     implementation "net.kyori:adventure-platform-bukkit:$platformbukkit"

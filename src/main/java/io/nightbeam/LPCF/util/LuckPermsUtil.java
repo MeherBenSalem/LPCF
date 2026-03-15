@@ -38,6 +38,12 @@ public final class LuckPermsUtil {
         return value == null ? "" : value;
     }
 
+    public static int sortPriority(CachedMetaData metaData) {
+        if (metaData.getPrefixes().isEmpty()) return 100;
+        int maxWeight = metaData.getPrefixes().keySet().stream().max(Integer::compareTo).orElse(0);
+        return Math.max(1, 1000 - maxWeight);
+    }
+
     private static String joinValues(Collection<String> values) {
         return values.stream().collect(Collectors.joining(" "));
     }
