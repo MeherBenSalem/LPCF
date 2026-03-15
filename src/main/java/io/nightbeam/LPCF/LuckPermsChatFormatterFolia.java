@@ -3,6 +3,8 @@ package io.nightbeam.LPCF;
 import io.nightbeam.LPCF.command.LPCFCommand;
 import io.nightbeam.LPCF.config.PluginConfig;
 import io.nightbeam.LPCF.listener.FoliaChatListener;
+import io.nightbeam.LPCF.listener.NametagListener;
+import io.nightbeam.LPCF.chat.NametagService;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -12,6 +14,7 @@ public final class LuckPermsChatFormatterFolia extends JavaPlugin {
     private PluginConfig pluginConfig;
     private LuckPerms luckPerms;
     private boolean placeholderApiPresent;
+    private NametagService nametagService;
 
     @Override
     public void onEnable() {
@@ -33,9 +36,11 @@ public final class LuckPermsChatFormatterFolia extends JavaPlugin {
 
         saveDefaultConfig();
         this.pluginConfig = new PluginConfig(this);
+        this.nametagService = new NametagService(this);
 
         registerCommand();
         registerListeners();
+        getServer().getGlobalRegionScheduler().execute(this, () -> nametagService.refreshAllNametags());
 
         getLogger().info("LuckPermsChatFormatterFolia enabled.");
     }
@@ -48,6 +53,7 @@ public final class LuckPermsChatFormatterFolia extends JavaPlugin {
     public void reloadPluginConfig() {
         reloadConfig();
         this.pluginConfig.reload();
+        getServer().getGlobalRegionScheduler().execute(this, () -> nametagService.refreshAllNametags());
     }
 
     public PluginConfig pluginConfig() {
@@ -62,6 +68,10 @@ public final class LuckPermsChatFormatterFolia extends JavaPlugin {
         return this.placeholderApiPresent;
     }
 
+    public NametagService nametagService() {
+        return this.nametagService;
+    }
+
     private void registerCommand() {
         LPCFCommand command = new LPCFCommand(this);
         if (getCommand("lpcf") != null) {
@@ -72,6 +82,7 @@ public final class LuckPermsChatFormatterFolia extends JavaPlugin {
 
     private void registerListeners() {
         getServer().getPluginManager().registerEvents(new FoliaChatListener(this), this);
+        getServer().getPluginManager().registerEvents(new NametagListener(this), this);
     }
 
     private boolean isFoliaEnvironment() {

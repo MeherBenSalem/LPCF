@@ -19,6 +19,10 @@
 # More information can be found at the Github Wiki.
 chat-format: "{prefix}{name}<dark_gray> »<reset> {message}"
 
+# Name tag format shown above the player's head.
+# Supports the same placeholders as chat-format except {message}.
+nametag-format: "{prefix}{name}"
+
 # Set the format per group.
 # Note: Option for more advanced users. Remove comments to use.
 group-formats:
