@@ -12,6 +12,8 @@ import org.bukkit.entity.Player;
 
 public final class DisplayNameService {
 
+    private static final String NAME_TOKEN = "__LPCF_NAMETAG_NAME__";
+
     private final LuckPermsChatFormatterFolia plugin;
     private final MiniMessage miniMessage;
 
@@ -24,33 +26,54 @@ public final class DisplayNameService {
         PluginConfig config = plugin.pluginConfig();
         CachedMetaData metaData = plugin.luckPerms().getPlayerAdapter(Player.class).getMetaData(player);
 
-        String format = config.nametagFormat();
-
-        String resolved = MiniMessageUtil.normalize(format)
-                .replace("{prefix}", MiniMessageUtil.normalize(LuckPermsUtil.prefix(metaData)))
-                .replace("{suffix}", MiniMessageUtil.normalize(LuckPermsUtil.suffix(metaData)))
-                .replace("{prefixes}", MiniMessageUtil.normalize(LuckPermsUtil.joinedPrefixes(metaData)))
-                .replace("{suffixes}", MiniMessageUtil.normalize(LuckPermsUtil.joinedSuffixes(metaData)))
-                .replace("{world}", player.getWorld().getName())
-                .replace("{name}", player.getName())
-                .replace("{username-color}", MiniMessageUtil.normalize(LuckPermsUtil.metaValue(metaData, "username-color")));
-
-        if (plugin.hasPlaceholderApi()) {
-            resolved = MiniMessageUtil.normalize(PlaceholderAPI.setPlaceholders(player, resolved));
-        }
-
-        Component displayName = miniMessage.deserialize(resolved);
-        // REMOVED player.displayName(displayName) to fix the double prefix in chat
+        String resolvedNametag = resolveNametagFormat(config.nametagFormat(), player, metaData);
+        Component displayName = miniMessage.deserialize(resolvedNametag.replace(NAME_TOKEN, player.getName()));
         player.playerListName(displayName);
-        
-        Component prefixComponent = miniMessage.deserialize(MiniMessageUtil.normalize(LuckPermsUtil.prefix(metaData)));
-        Component suffixComponent = miniMessage.deserialize(MiniMessageUtil.normalize(LuckPermsUtil.suffix(metaData)));
-        plugin.nametagManager().setNametag(player.getName(), prefixComponent, suffixComponent, LuckPermsUtil.sortPriority(metaData));
+
+        NametagParts nametagParts = splitNametagParts(resolvedNametag, player.getName());
+        plugin.nametagManager().setNametag(
+                player.getName(),
+                nametagParts.prefix(),
+                nametagParts.suffix(),
+                LuckPermsUtil.sortPriority(metaData)
+        );
     }
 
     public void updateAll() {
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             updateDisplayName(player);
         }
+    }
+
+    private String resolveNametagFormat(String format, Player player, CachedMetaData metaData) {
+        String resolved = MiniMessageUtil.normalize(format)
+                .replace("{prefix}", MiniMessageUtil.normalize(LuckPermsUtil.prefix(metaData)))
+                .replace("{suffix}", MiniMessageUtil.normalize(LuckPermsUtil.suffix(metaData)))
+                .replace("{prefixes}", MiniMessageUtil.normalize(LuckPermsUtil.joinedPrefixes(metaData)))
+                .replace("{suffixes}", MiniMessageUtil.normalize(LuckPermsUtil.joinedSuffixes(metaData)))
+                .replace("{world}", player.getWorld().getName())
+                .replace("{name}", NAME_TOKEN)
+                .replace("{displayname}", NAME_TOKEN)
+                .replace("{username-color}", MiniMessageUtil.normalize(LuckPermsUtil.metaValue(metaData, "username-color")));
+
+        if (plugin.hasPlaceholderApi()) {
+            resolved = MiniMessageUtil.normalize(PlaceholderAPI.setPlaceholders(player, resolved));
+        }
+
+        return resolved;
+    }
+
+    private NametagParts splitNametagParts(String resolvedNametag, String playerName) {
+        int nameIndex = resolvedNametag.indexOf(NAME_TOKEN);
+        if (nameIndex < 0) {
+            return new NametagParts(miniMessage.deserialize(resolvedNametag), Component.empty());
+        }
+
+        String prefix = resolvedNametag.substring(0, nameIndex).replace(NAME_TOKEN, playerName);
+        String suffix = resolvedNametag.substring(nameIndex + NAME_TOKEN.length()).replace(NAME_TOKEN, playerName);
+        return new NametagParts(miniMessage.deserialize(prefix), miniMessage.deserialize(suffix));
+    }
+
+    private record NametagParts(Component prefix, Component suffix) {
     }
 }
