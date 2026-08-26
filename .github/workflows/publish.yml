@@ -129,22 +129,41 @@ jobs:
               body: form,
             });
             const mrText = await mrRes.text();
-            if (!mrRes.ok) throw new Error('Modrinth ' + mrRes.status + ' ' + mrText.slice(0, 500));
-            console.log('Modrinth OK', mrText.slice(0, 180));
+            if (!mrRes.ok) {
+              const already = mrRes.status === 409 || /already exists|duplicate/i.test(mrText);
+              if (!already) throw new Error('Modrinth ' + mrRes.status + ' ' + mrText.slice(0, 500));
+              console.log('Modrinth version already exists; continuing to CurseForge');
+            } else {
+              console.log('Modrinth OK', mrText.slice(0, 180));
+            }
 
-            const gvRes = await fetch('https://api.curseforge.com/v1/games/432/versions', {
+            const mcRes = await fetch('https://api.curseforge.com/v1/minecraft/versions', {
               headers: { 'x-api-key': process.env.CURSEFORGE_API_KEY },
             });
-            const gvJson = await gvRes.json();
-            const flat = [];
-            for (const g of gvJson.data || []) for (const v of g.versions || []) flat.push(v);
+            const mcText = await mcRes.text();
+            if (!mcRes.ok) throw new Error('CurseForge versions ' + mcRes.status + ' ' + mcText.slice(0, 500));
+            const mcJson = JSON.parse(mcText);
+            const mcList = mcJson.data || [];
             const gameVersionIds = [];
             for (const want of gvs) {
-              const hit = flat.find((v) => v.name === want);
-              if (hit) gameVersionIds.push(hit.id);
-              else console.warn('No CF game version for ' + want + ' (skipped)');
+              const hit = mcList.find((v) => v.versionString === want || v.name === want);
+              if (hit) gameVersionIds.push(hit.gameVersionId || hit.id);
+              else console.warn('No CF Minecraft version for ' + want + ' (skipped)');
             }
+
+            const typeRes = await fetch('https://api.curseforge.com/v1/games/432/versions', {
+              headers: { 'x-api-key': process.env.CURSEFORGE_API_KEY },
+            });
+            const typeJson = await typeRes.json();
+            const typed = [];
+            for (const g of typeJson.data || []) for (const v of g.versions || []) typed.push(v);
+            for (const loaderName of ['Bukkit', 'Paper', 'Spigot', 'Folia', 'Purpur']) {
+              const hit = typed.find((v) => v.name === loaderName);
+              if (hit && !gameVersionIds.includes(hit.id)) gameVersionIds.push(hit.id);
+            }
+
             if (!gameVersionIds.length) throw new Error('No CurseForge game versions resolved');
+            console.log('CF gameVersionIds count', gameVersionIds.length);
 
             for (const jar of jars) {
               const meta = {
