@@ -103,38 +103,55 @@ jobs:
           ];
 
           (async () => {
-            const fileParts = jars.map((_, i) => `file_${i}`);
-            const body = {
-              name: version,
-              version_number: version,
-              changelog: `Release ${version}`,
-              dependencies: [],
-              game_versions: gvs,
-              version_type: 'release',
-              loaders,
-              featured: false,
-              status: 'listed',
-              project_id: process.env.MODRINTH_ID,
-              file_parts: fileParts,
-              primary_file: fileParts[0],
-            };
-            const form = new FormData();
-            form.append('data', JSON.stringify(body));
-            for (let i = 0; i < jars.length; i++) {
-              form.append(fileParts[i], new Blob([fs.readFileSync(jars[i])]), path.basename(jars[i]));
+            const mrExisting = await fetch(
+              `https://api.modrinth.com/v2/project/${process.env.MODRINTH_ID}/version?version_number=${encodeURIComponent(version)}`,
+              { headers: { Authorization: process.env.MODRINTH_TOKEN } },
+            );
+            const mrExistingText = await mrExisting.text();
+            let skipModrinth = false;
+            if (mrExisting.ok) {
+              try {
+                const existing = JSON.parse(mrExistingText);
+                if (Array.isArray(existing) && existing.some((v) => v.version_number === version)) {
+                  skipModrinth = true;
+                  console.log('Modrinth version already exists; skipping upload');
+                }
+              } catch (_) {}
             }
-            const mrRes = await fetch('https://api.modrinth.com/v2/version', {
-              method: 'POST',
-              headers: { Authorization: process.env.MODRINTH_TOKEN },
-              body: form,
-            });
-            const mrText = await mrRes.text();
-            if (!mrRes.ok) {
-              const already = mrRes.status === 409 || /already exists|duplicate/i.test(mrText);
-              if (!already) throw new Error('Modrinth ' + mrRes.status + ' ' + mrText.slice(0, 500));
-              console.log('Modrinth version already exists; continuing to CurseForge');
-            } else {
-              console.log('Modrinth OK', mrText.slice(0, 180));
+            if (!skipModrinth) {
+              const fileParts = jars.map((_, i) => `file_${i}`);
+              const body = {
+                name: version,
+                version_number: version,
+                changelog: `Release ${version}`,
+                dependencies: [],
+                game_versions: gvs,
+                version_type: 'release',
+                loaders,
+                featured: false,
+                status: 'listed',
+                project_id: process.env.MODRINTH_ID,
+                file_parts: fileParts,
+                primary_file: fileParts[0],
+              };
+              const form = new FormData();
+              form.append('data', JSON.stringify(body));
+              for (let i = 0; i < jars.length; i++) {
+                form.append(fileParts[i], new Blob([fs.readFileSync(jars[i])]), path.basename(jars[i]));
+              }
+              const mrRes = await fetch('https://api.modrinth.com/v2/version', {
+                method: 'POST',
+                headers: { Authorization: process.env.MODRINTH_TOKEN },
+                body: form,
+              });
+              const mrText = await mrRes.text();
+              if (!mrRes.ok) {
+                const already = mrRes.status === 409 || /already exists|duplicate/i.test(mrText);
+                if (!already) throw new Error('Modrinth ' + mrRes.status + ' ' + mrText.slice(0, 500));
+                console.log('Modrinth version already exists; continuing to CurseForge');
+              } else {
+                console.log('Modrinth OK', mrText.slice(0, 180));
+              }
             }
 
             const mcRes = await fetch('https://minecraft.curseforge.com/api/game/versions', {
@@ -167,7 +184,7 @@ jobs:
                 changelogType: 'markdown',
                 displayName: path.basename(jar),
                 gameVersions: gameVersionIds,
-                releaseType: 1,
+                releaseType: 'release',
               };
               const cfForm = new FormData();
               cfForm.append('metadata', JSON.stringify(meta));
