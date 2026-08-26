@@ -137,32 +137,28 @@ jobs:
               console.log('Modrinth OK', mrText.slice(0, 180));
             }
 
-            const mcRes = await fetch('https://api.curseforge.com/v1/minecraft/versions', {
-              headers: { 'x-api-key': process.env.CURSEFORGE_API_KEY },
+            const mcRes = await fetch('https://minecraft.curseforge.com/api/game/versions', {
+              headers: { 'X-Api-Token': process.env.CURSEFORGE_TOKEN },
             });
             const mcText = await mcRes.text();
             if (!mcRes.ok) throw new Error('CurseForge versions ' + mcRes.status + ' ' + mcText.slice(0, 500));
-            const mcJson = JSON.parse(mcText);
-            const mcList = mcJson.data || [];
+            const mcList = JSON.parse(mcText);
+            if (!Array.isArray(mcList)) throw new Error('CurseForge versions: unexpected payload ' + mcText.slice(0, 200));
             const gameVersionIds = [];
             for (const want of gvs) {
-              const hit = mcList.find((v) => v.versionString === want || v.name === want);
-              if (hit) gameVersionIds.push(hit.gameVersionId || hit.id);
+              const hit = mcList.find((v) => v.name === want || v.slug === want || v.slug === want.replace(/\./g, '-'));
+              if (hit) gameVersionIds.push(hit.id);
               else console.warn('No CF Minecraft version for ' + want + ' (skipped)');
             }
-
-            const typeRes = await fetch('https://api.curseforge.com/v1/games/432/versions', {
-              headers: { 'x-api-key': process.env.CURSEFORGE_API_KEY },
-            });
-            const typeJson = await typeRes.json();
-            const typed = [];
-            for (const g of typeJson.data || []) for (const v of g.versions || []) typed.push(v);
             for (const loaderName of ['Bukkit', 'Paper', 'Spigot', 'Folia', 'Purpur']) {
-              const hit = typed.find((v) => v.name === loaderName);
+              const hit = mcList.find((v) => v.name === loaderName);
               if (hit && !gameVersionIds.includes(hit.id)) gameVersionIds.push(hit.id);
             }
 
-            if (!gameVersionIds.length) throw new Error('No CurseForge game versions resolved');
+            if (!gameVersionIds.length) {
+              console.warn('No CurseForge game versions resolved; sample=', JSON.stringify(mcList.slice(0, 5)));
+              throw new Error('No CurseForge game versions resolved');
+            }
             console.log('CF gameVersionIds count', gameVersionIds.length);
 
             for (const jar of jars) {
