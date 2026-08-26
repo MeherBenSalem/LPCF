@@ -1,11 +1,10 @@
 plugins {
     id 'java'
     id 'io.github.goooler.shadow' version '8.1.8'
-    id "io.papermc.paperweight.userdev" version "2.0.0-beta.17"
 }
 
 group = 'io.nightbeam'
-version = '1.1.1'
+version = '1.2.0'
 
 repositories {
     mavenCentral()
@@ -24,24 +23,32 @@ repositories {
 }
 
 dependencies {
-    paperweight.paperDevBundle("$paper")
+    compileOnly "io.papermc.paper:paper-api:$paper"
     compileOnly "net.luckperms:api:$luckpermsapi"
     compileOnly "me.clip:placeholderapi:$papi"
-    implementation "net.kyori:adventure-platform-bukkit:$platformbukkit"
-    implementation "net.kyori:adventure-text-minimessage:$adventure"
+    implementation 'org.bstats:bstats-bukkit:3.1.0'
 }
 
 shadowJar {
     archiveFileName.set('LuckPermsChatFormatterFolia.jar')
+    relocate 'org.bstats', 'io.nightbeam.LPCF.libs.bstats'
+
+    from('LICENSE') {
+        into 'META-INF'
+    }
+    from('NOTICE') {
+        into 'META-INF'
+    }
+}
+
+tasks.named('assemble') {
+    dependsOn tasks.named('shadowJar')
 }
 
 def targetJavaVersion = 21
 java {
-    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
-    if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
 }
 

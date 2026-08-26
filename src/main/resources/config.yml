@@ -16,7 +16,7 @@
 # Prefixes, suffixes, and formats support MiniMessage tags and legacy codes like '&l', '&a', and '&#RRGGBB'.
 
 # To reload the configuration, run '/lpcf reload'. Make sure you have the 'lpcf.reload' permission assigned.
-# More information can be found at the Github Wiki.
+# More information can be found in the README.
 chat-format: "{prefix}{name}<dark_gray> »<reset> {message}"
 
 # Name tag format applied to the player's display name.
@@ -38,3 +38,8 @@ use-item-placeholder: true
 
 # Message sent after /lpcf reload
 reload-message: "<green>LPCF configuration reloaded successfully!"
+
+# Modrinth update checker (notifies ops and players with lpcf.reload on join)
+update-check:
+  enabled: true
+  message: "<yellow>A new LPCF version is available: <white>{current} <gray>-> <green>{latest}"

@@ -1,17 +1,9 @@
-# Dual-publish NightBeam mods/plugins to Modrinth + CurseForge on version tags.
-# Copy to each mod repo as: .github/workflows/publish.yml
+# Publish LPCF to Modrinth + CurseForge on version tags.
 #
-# Org/repo secrets:
-#   MODRINTH_TOKEN
-#   CURSEFORGE_TOKEN
-#   CURSEFORGE_API_KEY
+# Secrets: MODRINTH_TOKEN, CURSEFORGE_TOKEN, CURSEFORGE_API_KEY
+# Variables: MODRINTH_ID (cq7XqCTD), CURSEFORGE_ID
 #
-# Repo variables:
-#   MODRINTH_ID
-#   CURSEFORGE_ID
-#
-# Usage after a release build is ready:
-#   git tag v1.2.3 && git push --tags
+#   git tag v1.2.0 && git push --tags
 
 name: Publish
 
@@ -59,16 +51,14 @@ jobs:
 
       - name: Build
         run: |
-          chmod +x gradlew 2>/dev/null || true
-          if [ -f gradlew ]; then ./gradlew build --no-daemon
-          else gradle build --no-daemon
-          fi
+          chmod +x gradlew
+          ./gradlew shadowJar --no-daemon
 
       - name: Find jars
         id: jars
         shell: bash
         run: |
-          mapfile -t JARS < <(find . -type f -path "*/build/libs/*.jar" \
+          mapfile -t JARS < <(find ./build/libs -type f -name "*.jar" \
             ! -name "*-sources.jar" ! -name "*-javadoc.jar" \
             ! -name "*-dev.jar" ! -name "*-dev-shadow.jar" | head -n 20)
           if [ ${#JARS[@]} -eq 0 ]; then
@@ -104,19 +94,13 @@ jobs:
           const path = require('path');
           const version = process.env.VERSION;
           const jars = process.env.JAR_LIST.split(/\n/).map(s => s.trim()).filter(Boolean);
-          const loaders = new Set();
-          const gvs = new Set();
-          for (const jar of jars) {
-            const n = path.basename(jar).toLowerCase();
-            if (n.includes('neoforge')) loaders.add('neoforge');
-            else if (n.includes('fabric')) loaders.add('fabric');
-            else if (n.includes('quilt')) loaders.add('quilt');
-            else if (n.includes('forge')) loaders.add('forge');
-            else loaders.add('fabric');
-            const m = n.match(/1\.\d+(?:\.\d+)?/);
-            if (m) gvs.add(m[0]);
-          }
-          if (!gvs.size) gvs.add('1.21.1');
+          const loaders = ['paper', 'folia', 'purpur'];
+          const gvs = [
+            '1.20.1', '1.20.2', '1.20.3', '1.20.4', '1.20.5', '1.20.6',
+            '1.21', '1.21.1', '1.21.2', '1.21.3', '1.21.4', '1.21.5',
+            '1.21.6', '1.21.7', '1.21.8', '1.21.9', '1.21.10', '1.21.11',
+            '26.1', '26.1.1', '26.1.2', '26.2'
+          ];
 
           (async () => {
             const fileParts = jars.map((_, i) => `file_${i}`);
@@ -125,9 +109,9 @@ jobs:
               version_number: version,
               changelog: `Release ${version}`,
               dependencies: [],
-              game_versions: [...gvs],
+              game_versions: gvs,
               version_type: 'release',
-              loaders: [...loaders],
+              loaders,
               featured: false,
               status: 'listed',
               project_id: process.env.MODRINTH_ID,
@@ -154,11 +138,13 @@ jobs:
             const gvJson = await gvRes.json();
             const flat = [];
             for (const g of gvJson.data || []) for (const v of g.versions || []) flat.push(v);
-            const gameVersionIds = [...gvs].map((want) => {
+            const gameVersionIds = [];
+            for (const want of gvs) {
               const hit = flat.find((v) => v.name === want);
-              if (!hit) throw new Error('No CF game version for ' + want);
-              return hit.id;
-            });
+              if (hit) gameVersionIds.push(hit.id);
+              else console.warn('No CF game version for ' + want + ' (skipped)');
+            }
+            if (!gameVersionIds.length) throw new Error('No CurseForge game versions resolved');
 
             for (const jar of jars) {
               const meta = {

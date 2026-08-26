@@ -1,12 +1,12 @@
 name: LuckPermsChatFormatterFolia
 version: '${version}'
 main: io.nightbeam.LPCF.LuckPermsChatFormatterFolia
-api-version: '1.21'
+api-version: '1.20'
 folia-supported: true
 authors: [NightBeam]
 depend: [LuckPerms]
 softdepend: [PlaceholderAPI]
-description: Folia-compatible LuckPerms chat formatter with MiniMessage support.
+description: Paper/Folia-compatible LuckPerms chat formatter with MiniMessage support.
 commands:
   lpcf:
     description: Reload LPCF configuration.

@@ -17,6 +17,8 @@ public final class PluginConfig {
     private Map<String, String> trackFormats;
     private boolean useItemPlaceholder;
     private String reloadMessage;
+    private boolean updateCheckEnabled;
+    private String updateCheckMessage;
 
     public PluginConfig(LuckPermsChatFormatterFolia plugin) {
         this.plugin = plugin;
@@ -30,6 +32,11 @@ public final class PluginConfig {
         this.trackFormats = readSectionMap("track-formats");
         this.useItemPlaceholder = plugin.getConfig().getBoolean("use-item-placeholder", true);
         this.reloadMessage = plugin.getConfig().getString("reload-message", "<green>LPCF configuration reloaded successfully!");
+        this.updateCheckEnabled = plugin.getConfig().getBoolean("update-check.enabled", true);
+        this.updateCheckMessage = plugin.getConfig().getString(
+                "update-check.message",
+                "<yellow>A new LPCF version is available: <white>{current} <gray>-> <green>{latest}"
+        );
     }
 
     public String chatFormat() {
@@ -54,6 +61,14 @@ public final class PluginConfig {
 
     public String reloadMessage() {
         return reloadMessage;
+    }
+
+    public boolean updateCheckEnabled() {
+        return updateCheckEnabled;
+    }
+
+    public String updateCheckMessage() {
+        return updateCheckMessage;
     }
 
     private Map<String, String> readSectionMap(String path) {

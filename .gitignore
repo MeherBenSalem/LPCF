@@ -2,14 +2,10 @@
 ## IDEA
 #################
 
-# User-specific stuff
 .idea/
 .idea_modules/
 *.iml
-
-# IntelliJ
 out/
-
 target/
 
 #################
@@ -31,43 +27,41 @@ local.properties
 .loadpath
 .apt_generated/
 .apt_generated_tests/
-
-# Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
-!/.mvn/wrapper/maven-wrapper.jar
-
-# External tool builders
+!.mvn/wrapper/maven-wrapper.jar
 .externalToolBuilders/
-
-# Locally stored "Eclipse launch configurations"
 *.launch
-
-# CDT-specific
 .cproject
-
-# PDT-specific
 .buildpath
-
-# Builder
 builder.xml
 build.xml
 
-#############
-## Windows detritus
-#############
+#################
+## VS Code
+#################
 
-# Windows image file caches
+.vscode/
+
+#################
+## OS
+#################
+
 Thumbs.db
 ehthumbs.db
-
-# Folder config file
 Desktop.ini
-
-# Recycle Bin used on file shares
 $RECYCLE.BIN/
-
-# Mac crap
 .DS_Store
-REBASE.bat
-/.gradle/
 
-/build/*
+#################
+## Build / local
+#################
+
+.gradle/
+build/
+*.log
+run/
+server/
+.env
+.env.*
+
+# graphify
+graphify-out/

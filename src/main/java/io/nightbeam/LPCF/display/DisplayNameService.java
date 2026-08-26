@@ -41,7 +41,7 @@ public final class DisplayNameService {
 
     public void updateAll() {
         for (Player player : plugin.getServer().getOnlinePlayers()) {
-            updateDisplayName(player);
+            io.nightbeam.LPCF.util.SchedulerUtil.run(plugin, player, () -> updateDisplayName(player));
         }
     }
 
