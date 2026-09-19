@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'io.nightbeam'
-version = '1.2.1'
+version = '1.2.3'
 
 repositories {
     mavenCentral()
@@ -35,7 +35,9 @@ dependencies {
 }
 
 shadowJar {
-    archiveFileName.set('LuckPermsChatFormatterFolia.jar')
+    archiveBaseName.set('LuckPermsChatFormatterFolia')
+    archiveVersion.set(version)
+    archiveClassifier.set('')
     relocate 'org.bstats', 'io.nightbeam.LPCF.libs.bstats'
 
     from('LICENSE') {
