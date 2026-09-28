@@ -151,36 +151,14 @@ jobs:
               }
             }
 
-            const mcRes = await fetch('https://minecraft.curseforge.com/api/game/versions', {
-              headers: { 'X-Api-Token': process.env.CURSEFORGE_TOKEN },
-            });
-            const mcText = await mcRes.text();
-            if (!mcRes.ok) throw new Error('CurseForge versions ' + mcRes.status + ' ' + mcText.slice(0, 500));
-            const mcList = JSON.parse(mcText);
-            if (!Array.isArray(mcList)) throw new Error('CurseForge versions: unexpected payload ' + mcText.slice(0, 200));
-            const gameVersionIds = [];
-            for (const want of gvs) {
-              const hit = mcList.find((v) => v.name === want || v.slug === want || v.slug === want.replace(/\./g, '-'));
-              if (hit) gameVersionIds.push(hit.id);
-              else console.warn('No CF Minecraft version for ' + want + ' (skipped)');
-            }
-            for (const loaderName of ['Bukkit', 'Paper', 'Spigot', 'Folia', 'Purpur']) {
-              const hit = mcList.find((v) => v.name === loaderName);
-              if (hit && !gameVersionIds.includes(hit.id)) gameVersionIds.push(hit.id);
-            }
-
-            if (!gameVersionIds.length) {
-              console.warn('No CurseForge game versions resolved; sample=', JSON.stringify(mcList.slice(0, 5)));
-              throw new Error('No CurseForge game versions resolved');
-            }
-            console.log('CF gameVersionIds count', gameVersionIds.length);
+            const gameVersionNames = [...gvs, 'Bukkit', 'Paper', 'Spigot', 'Folia', 'Purpur'];
 
             for (const jar of jars) {
               const meta = {
                 changelog: `Release ${version}`,
                 changelogType: 'markdown',
                 displayName: path.basename(jar),
-                gameVersions: gameVersionIds,
+                gameVersionNames,
                 releaseType: 'release',
               };
               const cfForm = new FormData();
