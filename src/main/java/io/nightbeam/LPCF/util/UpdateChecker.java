@@ -45,7 +45,7 @@ public final class UpdateChecker implements Listener {
         SchedulerUtil.runAsync(plugin, () -> {
             try {
                 HttpRequest request = HttpRequest.newBuilder(MODRINTH_VERSIONS)
-                        .header("User-Agent", "LuckPermsChatFormatterFolia/" + plugin.getDescription().getVersion())
+                        .header("User-Agent", "LuckPermsChatFormatterFolia/" + plugin.getPluginMeta().getVersion())
                         .timeout(Duration.ofSeconds(15))
                         .GET()
                         .build();
@@ -62,7 +62,7 @@ public final class UpdateChecker implements Listener {
                     return;
                 }
 
-                String currentVersion = plugin.getDescription().getVersion();
+                String currentVersion = plugin.getPluginMeta().getVersion();
                 if (compareVersions(currentVersion, remoteVersion) < 0) {
                     latestVersion = remoteVersion;
                     plugin.getLogger().warning(
@@ -92,7 +92,7 @@ public final class UpdateChecker implements Listener {
             return;
         }
 
-        String currentVersion = plugin.getDescription().getVersion();
+        String currentVersion = plugin.getPluginMeta().getVersion();
         if (compareVersions(currentVersion, remoteVersion) >= 0) {
             return;
         }
