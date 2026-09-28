@@ -6,7 +6,7 @@
 - Keep `api-version: 1.21` so currently supported older servers still load the plugin.
 - Keep Folia support (`folia-supported: true`). There is no Folia 26.3; Folia users stay on 26.2.
 - Exercise `/lpcf reload` and help/usage on real servers (see PR test notes).
-- Tested on Paper **26.3 build 133** (ALPHA).
+- Tested on Paper **26.3 build 133** (ALPHA), Paper 26.2 build 129, Paper 26.1.2 build 74, and Folia 26.2 build 7 with LuckPerms 5.5.71 and PlaceholderAPI 2.12.3. Clean enable, `/lpcf reload`, and `/help lpcf` on all four.
 
 ## 1.2.3
 - Replace broken **1.2.2** NMS nametag path (`PlayerTeam.setColor(Optional)`) that crashes on Folia **26.1.2**.
