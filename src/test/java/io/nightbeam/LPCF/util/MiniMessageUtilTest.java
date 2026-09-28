@@ -31,4 +31,27 @@ class MiniMessageUtilTest {
         assertEquals("", MiniMessageUtil.normalize(null));
         assertEquals("", MiniMessageUtil.normalize(""));
     }
+
+    @Test
+    void normalizeConvertsLegacyAmpersandRgbSequence() {
+        assertEquals("<#AABBCC>hi", MiniMessageUtil.normalize("&x&A&A&B&B&C&Chi"));
+    }
+
+    @Test
+    void normalizeConvertsSectionLegacyCodes() {
+        assertEquals("<bold>hello", MiniMessageUtil.normalize("§lhello"));
+    }
+
+    @Test
+    void stripFormattingRemovesHexAndSectionCodes() {
+        assertEquals("hello", MiniMessageUtil.stripFormatting("&#FF0000hello"));
+        assertEquals("hello", MiniMessageUtil.stripFormatting("&x&F&F&0&0&0&0hello"));
+        assertEquals("hello", MiniMessageUtil.stripFormatting("§chello"));
+    }
+
+    @Test
+    void stripFormattingEmptyInputReturnsEmptyString() {
+        assertEquals("", MiniMessageUtil.stripFormatting(null));
+        assertEquals("", MiniMessageUtil.stripFormatting(""));
+    }
 }

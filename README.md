@@ -1,6 +1,6 @@
 # LPCF
 
-LuckPerms chat and nametag formatter for **Paper**, **Folia**, and **Purpur** (Minecraft **1.20.1–26.2**).
+LuckPerms chat and nametag formatter for **Paper**, **Folia**, and **Purpur** (Minecraft **1.20.1–26.3**).
 
 Requires [LuckPerms](https://luckperms.net/). [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/) is optional.
 
@@ -37,7 +37,7 @@ Download releases from [Modrinth](https://modrinth.com/plugin/lpcf-chat-formatte
 
 ## Build
 
-JDK 21 required:
+JDK 25 required:
 
 ```bash
 ./gradlew shadowJar

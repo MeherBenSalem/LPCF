@@ -5,7 +5,7 @@ Thanks for helping improve LPCF (LuckPermsChatFormatterFolia).
 ## Development
 
 1. Fork and clone the repository.
-2. Use JDK 21.
+2. Use JDK 25.
 3. Build with the Gradle wrapper:
 
 ```bash

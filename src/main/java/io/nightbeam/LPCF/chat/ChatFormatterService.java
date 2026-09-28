@@ -15,14 +15,12 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Map;
 import java.util.regex.Pattern;
 
 public final class ChatFormatterService {
 
-    private static final Pattern ITEM_PATTERN = Pattern.compile("\\[item]", Pattern.CASE_INSENSITIVE);
-    private static final Pattern NAME_TOKEN_PATTERN = Pattern.compile(Pattern.quote("__LPCF_NAME__"));
-    private static final Pattern DISPLAY_NAME_TOKEN_PATTERN = Pattern.compile(Pattern.quote("__LPCF_DISPLAYNAME__"));
+    private static final Pattern NAME_TOKEN_PATTERN = Pattern.compile(Pattern.quote(ChatFormatPlaceholders.NAME_TOKEN));
+    private static final Pattern DISPLAY_NAME_TOKEN_PATTERN = Pattern.compile(Pattern.quote(ChatFormatPlaceholders.DISPLAY_NAME_TOKEN));
 
     private final LuckPermsChatFormatterFolia plugin;
     private final MiniMessage miniMessage;
@@ -38,25 +36,23 @@ public final class ChatFormatterService {
 
         String group = LuckPermsUtil.primaryGroup(metaData);
         String format = resolveFormat(group, config);
-        final String nameToken = "__LPCF_NAME__";
-        final String displayNameToken = "__LPCF_DISPLAYNAME__";
 
         String rawMessage = PlainTextComponentSerializer.plainText().serialize(message);
         rawMessage = player.hasPermission("lpcf.colorcodes")
                 ? MiniMessageUtil.normalize(rawMessage)
                 : MiniMessageUtil.stripFormatting(rawMessage);
 
-        String resolved = MiniMessageUtil.normalize(format)
-                .replace("{prefix}", MiniMessageUtil.normalize(LuckPermsUtil.prefix(metaData)))
-                .replace("{suffix}", MiniMessageUtil.normalize(LuckPermsUtil.suffix(metaData)))
-                .replace("{prefixes}", MiniMessageUtil.normalize(LuckPermsUtil.joinedPrefixes(metaData)))
-                .replace("{suffixes}", MiniMessageUtil.normalize(LuckPermsUtil.joinedSuffixes(metaData)))
-                .replace("{world}", player.getWorld().getName())
-                .replace("{name}", nameToken)
-                .replace("{displayname}", displayNameToken)
-                .replace("{username-color}", MiniMessageUtil.normalize(LuckPermsUtil.metaValue(metaData, "username-color")))
-                .replace("{message-color}", MiniMessageUtil.normalize(LuckPermsUtil.metaValue(metaData, "message-color")))
-                .replace("{message}", rawMessage);
+        String resolved = ChatFormatPlaceholders.substitute(
+                format,
+                LuckPermsUtil.prefix(metaData),
+                LuckPermsUtil.suffix(metaData),
+                LuckPermsUtil.joinedPrefixes(metaData),
+                LuckPermsUtil.joinedSuffixes(metaData),
+                player.getWorld().getName(),
+                LuckPermsUtil.metaValue(metaData, "username-color"),
+                LuckPermsUtil.metaValue(metaData, "message-color"),
+                rawMessage
+        );
 
         if (plugin.hasPlaceholderApi()) {
             resolved = MiniMessageUtil.normalize(PlaceholderAPI.setPlaceholders(player, resolved));
@@ -84,19 +80,16 @@ public final class ChatFormatterService {
     }
 
     private String resolveFormat(String group, PluginConfig config) {
-        String groupFormat = config.groupFormats().get(group);
-        if (groupFormat != null) {
-            return groupFormat;
-        }
-
-        for (Map.Entry<String, String> trackEntry : config.trackFormats().entrySet()) {
-            Track track = plugin.luckPerms().getTrackManager().getTrack(trackEntry.getKey());
-            if (track != null && track.containsGroup(group)) {
-                return trackEntry.getValue();
-            }
-        }
-
-        return config.chatFormat();
+        return ChatFormatPlaceholders.resolveFormat(
+                group,
+                config.chatFormat(),
+                config.groupFormats(),
+                config.trackFormats(),
+                trackName -> {
+                    Track track = plugin.luckPerms().getTrackManager().getTrack(trackName);
+                    return track != null && track.containsGroup(group);
+                }
+        );
     }
 
     private Component applyItemPlaceholder(Component rendered, Player player) {
@@ -116,7 +109,7 @@ public final class ChatFormatterService {
         Component finalItemDisplay = itemDisplay.hoverEvent(heldItem);
 
         return rendered.replaceText(TextReplacementConfig.builder()
-                .match(ITEM_PATTERN)
+                .match(ChatFormatPlaceholders.ITEM_PATTERN)
                 .replacement(finalItemDisplay)
                 .build());
     }
