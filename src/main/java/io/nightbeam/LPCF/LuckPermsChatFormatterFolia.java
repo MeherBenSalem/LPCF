@@ -15,6 +15,8 @@ import org.bstats.bukkit.Metrics;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.logging.Level;
+
 public final class LuckPermsChatFormatterFolia extends JavaPlugin {
 
     private PluginConfig pluginConfig;
@@ -61,7 +63,11 @@ public final class LuckPermsChatFormatterFolia extends JavaPlugin {
             luckPermsSubscription.close();
         }
         if (nametagManager != null) {
-            nametagManager.reset();
+            try {
+                nametagManager.reset();
+            } catch (RuntimeException ex) {
+                getLogger().log(Level.WARNING, "Failed to clear scoreboard nametag teams on disable.", ex);
+            }
         }
         getLogger().info("LuckPermsChatFormatterFolia disabled.");
     }
@@ -113,7 +119,17 @@ public final class LuckPermsChatFormatterFolia extends JavaPlugin {
         this.luckPermsSubscription = luckPerms.getEventBus().subscribe(this, UserDataRecalculateEvent.class, event -> {
             Player player = getServer().getPlayer(event.getUser().getUniqueId());
             if (player != null && player.isOnline()) {
-                SchedulerUtil.run(this, player, () -> displayNameService.updateDisplayName(player));
+                SchedulerUtil.run(this, player, () -> {
+                    try {
+                        displayNameService.updateDisplayName(player);
+                    } catch (RuntimeException ex) {
+                        getLogger().log(
+                                Level.WARNING,
+                                "Failed to refresh display name after LuckPerms update for " + player.getName(),
+                                ex
+                        );
+                    }
+                });
             }
         });
     }

@@ -6,7 +6,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,8 +21,14 @@ public class NametagManager {
     private final ReadWriteLock TEAMS_LOCK = new ReentrantReadWriteLock();
 
     private final Map<String, FakeTeam> CACHED_FAKE_TEAMS = new ConcurrentHashMap<>();
+    private final ScoreboardTeamAccess teamAccess;
 
     public NametagManager(final LuckPermsChatFormatterFolia plugin) {
+        this(ScoreboardTeamAccess.forServer(plugin.getLogger()));
+    }
+
+    NametagManager(final ScoreboardTeamAccess teamAccess) {
+        this.teamAccess = teamAccess;
     }
 
     @Nullable
@@ -184,17 +189,8 @@ public class NametagManager {
         }
     }
 
-    private Scoreboard mainScoreboard() {
-        return Bukkit.getScoreboardManager().getMainScoreboard();
-    }
-
     private void registerScoreboardTeam(FakeTeam fakeTeam) {
-        Scoreboard board = mainScoreboard();
-        Team team = board.getTeam(fakeTeam.getName());
-        if (team == null) {
-            team = board.registerNewTeam(fakeTeam.getName());
-        }
-        applyFakeTeamToScoreboard(fakeTeam, team);
+        teamAccess.ensureTeam(fakeTeam.getName(), team -> applyFakeTeamToScoreboard(fakeTeam, team));
     }
 
     private void applyFakeTeamToScoreboard(FakeTeam fakeTeam, Team team) {
@@ -211,36 +207,20 @@ public class NametagManager {
     }
 
     private void addPlayerToScoreboardTeam(FakeTeam fakeTeam, String playerName) {
-        Scoreboard board = mainScoreboard();
-        Team team = board.getTeam(fakeTeam.getName());
-        if (team == null) {
-            registerScoreboardTeam(fakeTeam);
-            team = board.getTeam(fakeTeam.getName());
-        }
-        if (team != null && !team.hasEntry(playerName)) {
-            team.addEntry(playerName);
-        }
+        teamAccess.addEntry(
+                fakeTeam.getName(),
+                playerName,
+                team -> applyFakeTeamToScoreboard(fakeTeam, team)
+        );
     }
 
     private boolean removePlayerFromScoreboardTeam(FakeTeam fakeTeam, String playerName) {
-        Scoreboard board = mainScoreboard();
-        Team team = board.getTeam(fakeTeam.getName());
-        if (team != null) {
-            team.removeEntry(playerName);
-            if (team.getEntries().isEmpty()) {
-                team.unregister();
-                return true;
-            }
-        }
-        return fakeTeam.getMembers().isEmpty();
+        boolean scoreboardTeamGone = teamAccess.removeEntry(fakeTeam.getName(), playerName);
+        return scoreboardTeamGone || fakeTeam.getMembers().isEmpty();
     }
 
     private void unregisterScoreboardTeam(FakeTeam fakeTeam) {
-        Scoreboard board = mainScoreboard();
-        Team team = board.getTeam(fakeTeam.getName());
-        if (team != null) {
-            team.unregister();
-        }
+        teamAccess.unregister(fakeTeam.getName());
     }
 
 }

@@ -10,6 +10,8 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.luckperms.api.cacheddata.CachedMetaData;
 import org.bukkit.entity.Player;
 
+import java.util.logging.Level;
+
 public final class DisplayNameService {
 
     private static final String NAME_TOKEN = "__LPCF_NAMETAG_NAME__";
@@ -31,12 +33,24 @@ public final class DisplayNameService {
         player.playerListName(displayName);
 
         NametagParts nametagParts = splitNametagParts(resolvedNametag, player.getName());
-        plugin.nametagManager().setNametag(
-                player.getName(),
-                nametagParts.prefix(),
-                nametagParts.suffix(),
-                LuckPermsUtil.sortPriority(metaData)
-        );
+        if (plugin.nametagManager() == null) {
+            return;
+        }
+        try {
+            plugin.nametagManager().setNametag(
+                    player.getName(),
+                    nametagParts.prefix(),
+                    nametagParts.suffix(),
+                    LuckPermsUtil.sortPriority(metaData)
+            );
+        } catch (RuntimeException ex) {
+            plugin.getLogger().log(
+                    Level.WARNING,
+                    "Could not apply scoreboard nametag for " + player.getName()
+                            + "; tab-list display name was still updated.",
+                    ex
+            );
+        }
     }
 
     public void updateAll() {
