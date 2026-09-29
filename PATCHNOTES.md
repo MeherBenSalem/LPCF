@@ -1,5 +1,10 @@
 # LPCF patch notes
 
+## 1.2.5
+- Stop Folia **26.2** from failing `PlayerJoinEvent` with `UnsupportedOperationException` from `CraftScoreboard.registerNewTeam` (issue #1).
+- Keep Bukkit scoreboard nametags on Paper and other servers where team registration still works.
+- Always apply the formatted tab-list name first. If scoreboard teams cannot be registered, skip above-head nametag teams, log once, and let join continue.
+
 ## 1.2.4
 - Add Minecraft / Paper **26.3** support.
 - Compile against Paper API `26.3.build.49-alpha` (JDK 25). Bytecode target remains Java 25.

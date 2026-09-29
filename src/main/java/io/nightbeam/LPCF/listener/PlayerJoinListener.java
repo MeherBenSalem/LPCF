@@ -8,6 +8,8 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.logging.Level;
+
 public final class PlayerJoinListener implements Listener {
 
     private final io.nightbeam.LPCF.LuckPermsChatFormatterFolia plugin;
@@ -23,21 +25,40 @@ public final class PlayerJoinListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onWorldChange(PlayerChangedWorldEvent event) {
-        // Folia region/world switches can drop client team state; re-apply Bukkit scoreboard teams.
+        // Folia region/world switches can drop client team state; re-apply nametags when possible.
         refreshDisplay(event.getPlayer());
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        if (plugin.nametagManager() != null) {
+        if (plugin.nametagManager() == null) {
+            return;
+        }
+        try {
             plugin.nametagManager().reset(event.getPlayer().getName());
+        } catch (RuntimeException ex) {
+            plugin.getLogger().log(
+                    Level.WARNING,
+                    "Failed to clear nametag state for " + event.getPlayer().getName()
+                            + "; PlayerQuitEvent will continue.",
+                    ex
+            );
         }
     }
 
     private void refreshDisplay(Player player) {
-        plugin.displayNameService().updateDisplayName(player);
-        if (plugin.nametagManager() != null) {
-            plugin.nametagManager().sendTeams(player);
+        try {
+            plugin.displayNameService().updateDisplayName(player);
+            if (plugin.nametagManager() != null) {
+                plugin.nametagManager().sendTeams(player);
+            }
+        } catch (RuntimeException ex) {
+            plugin.getLogger().log(
+                    Level.WARNING,
+                    "Failed to refresh nametag/display for " + player.getName()
+                            + "; PlayerJoinEvent/world-change will continue.",
+                    ex
+            );
         }
     }
 }

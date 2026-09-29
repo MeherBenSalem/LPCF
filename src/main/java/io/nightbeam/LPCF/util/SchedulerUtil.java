@@ -13,6 +13,10 @@ public final class SchedulerUtil {
     private SchedulerUtil() {
     }
 
+    public static boolean isFolia() {
+        return FOLIA;
+    }
+
     private static boolean detectFolia() {
         try {
             Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
