@@ -56,8 +56,8 @@ class Session:
             clients = Path(os.environ.get('QA_HOME', '/tmp/lpcf-qa')) / 'clients'
             pid_file = clients / f'{self.active}.pid'
             if pid_file.exists():
-                # Newer clients (SDL) tell X their process id.
-                out = subprocess.run(['xdotool', 'search', '--onlyvisible', '--pid', pid_file.read_text().strip(),
+                # Newer clients tell X their process id (--all: every condition must match, not any).
+                out = subprocess.run(['xdotool', 'search', '--all', '--onlyvisible', '--pid', pid_file.read_text().strip(),
                                       '--name', 'Minecraft'], env=self.env, capture_output=True, text=True).stdout.split()
                 if out:
                     return out[-1]
@@ -77,8 +77,17 @@ class Session:
     def focus(self):
         w = self.window()
         if w:
-            # Xvfb has no window manager, so focus the window directly (no _NET_ACTIVE_WINDOW).
-            self.xdo('windowfocus', '--sync', w)
+            # Xvfb has no window manager, so focus the window directly (no _NET_ACTIVE_WINDOW). Older clients (GLFW
+            # 3.3) also need to be on top with the pointer over them; the centre is where a grabbed cursor rests, so
+            # the camera does not turn.
+            if w != getattr(self, 'focused', None):
+                self.xdo('windowraise', w)
+                self.xdo('windowfocus', '--sync', w)
+                self.xdo('mousemove', '--window', w, '960', '540')
+                time.sleep(0.3)
+                self.focused = w
+            else:
+                self.xdo('windowfocus', '--sync', w)
         return w
 
     def key(self, *keys, delay=0.15):
@@ -132,6 +141,7 @@ class Session:
         if w:
             # Several clients share the display: bring the chosen one to the front first.
             self.xdo('windowraise', w)
+            self.focused = None
             time.sleep(0.5)
         subprocess.run(['import', '-window', 'root', str(path)], env=self.env, check=True)
         if crop:
