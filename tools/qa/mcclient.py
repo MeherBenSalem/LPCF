@@ -168,6 +168,8 @@ def launch(version: str, username: str, server: str | None, log: Path | None) ->
     # each player's window by this id.
     deadline = time.time() + 300
     while time.time() < deadline and proc.poll() is None:
+        if windows(env, proc.pid):
+            break  # newer clients: found by process id
         new = [w for w in windows(env) if w not in before]
         if new:
             (HOME / f'{username}.wid').write_text(new[-1])
@@ -176,9 +178,10 @@ def launch(version: str, username: str, server: str | None, log: Path | None) ->
     return proc
 
 
-def windows(env) -> list[str]:
+def windows(env, pid: int | None = None) -> list[str]:
+    criteria = ['--pid', str(pid)] if pid else ['--name', 'Minecraft']
     try:
-        out = subprocess.run(['xdotool', 'search', '--onlyvisible', '--name', 'Minecraft'], env=env, capture_output=True, text=True)
+        out = subprocess.run(['xdotool', 'search', '--onlyvisible', *criteria], env=env, capture_output=True, text=True)
         return out.stdout.split()
     except FileNotFoundError:
         return []

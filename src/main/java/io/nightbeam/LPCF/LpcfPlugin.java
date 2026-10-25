@@ -181,18 +181,20 @@ public final class LpcfPlugin extends JavaPlugin {
 
     private String describeNametags() {
         return switch (pluginConfig.nametagStyle()) {
-            case AUTO -> (SchedulerUtil.isFolia()
-                    ? "text displays above the vanilla name (Folia has no scoreboard teams)"
-                    : "text displays") + ", " + textTagService.placement();
+            case AUTO -> "text displays, " + textTagService.placement();
             case TEAM -> SchedulerUtil.isFolia() ? "scoreboard teams (unavailable on Folia)" : "scoreboard teams";
             case OFF -> "off";
         };
     }
 
-    /** True where the vanilla name can be hidden under the text-display nametag (not on Folia). */
+    /**
+     * True where the vanilla name is hidden under the text-display nametag: by the player's scoreboard team (Paper,
+     * Purpur), or on Folia by the display riding the player (clients never draw the name of an entity carrying a
+     * passenger).
+     */
     public boolean vanillaNameHidden() {
         return pluginConfig.nametagStyle() == PluginConfig.NametagStyle.AUTO
-                && nametagManager != null && nametagManager.teamsSupported();
+                && (SchedulerUtil.isFolia() || (nametagManager != null && nametagManager.teamsSupported()));
     }
 
     public PluginConfig pluginConfig() {

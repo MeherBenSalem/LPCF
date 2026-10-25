@@ -165,8 +165,8 @@ public final class LPCFCommand implements CommandExecutor, TabCompleter {
 
     private String nametagMode(PluginConfig config) {
         return switch (config.nametagStyle()) {
-            case AUTO -> (plugin.vanillaNameHidden() ? "text display (vanilla name hidden)" : "text display above the vanilla name")
-                    + " " + plugin.textTagService().placement();
+            case AUTO -> (plugin.vanillaNameHidden() ? "text display (vanilla name hidden), " : "text display above the vanilla name, ")
+                    + plugin.textTagService().placement();
             case TEAM -> "scoreboard team";
             case OFF -> "off";
         };

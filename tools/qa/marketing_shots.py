@@ -6,7 +6,7 @@ Steve joined (tools/qa/mcclient.py). Steve is the camera. Every capture is one u
 
   python3 tools/qa/marketing_shots.py [hero nametag-lines chat tablist debug]
 
-The Folia capture (folia.jpg) needs a Folia server and two clients: `python3 tools/qa/marketing_shots.py folia`.
+The Folia capture (folia.jpg) needs a Folia server with Builder and Steve: `python3 tools/qa/marketing_shots.py folia`.
 """
 from __future__ import annotations
 
@@ -68,12 +68,9 @@ def set_config(edits):
     cmd('lpcf reload')
 
 
-def ground(x, z):
-    """Top block height at x, z: spreadplayers puts the marker player on the surface."""
-    cmd(f'spreadplayers {x} {z} 0 1 false Steve', pause=1.5)
-    out = s.cmd('data get entity Steve Pos[1]')
-    match = re.search(r'(-?\d+(?:\.\d+)?)d', out)
-    return float(match.group(1)) if match else 70.0
+def place(who, x, z, yaw, pitch=0):
+    """Stands a player on the highest block at x, z facing yaw/pitch (the QA helper's /qaground)."""
+    cmd(f'qaground {who} {x} {z} {yaw} {pitch}', pause=1.2)
 
 
 def setup():
@@ -81,7 +78,8 @@ def setup():
               'lp group owner meta setprefix 300 "<gradient:#ff7a59:#ffd166>[Owner]</gradient> "',
               'lp creategroup vip', 'lp group vip setweight 100', 'lp group vip meta setprefix 100 "<#4cc9f0>[VIP]</#4cc9f0> "',
               'lp user Builder parent set owner', 'lp user Alex parent set vip', 'lp user Builder permission set lpcf.colorcodes true',
-              'op Steve', 'time set noon', 'weather clear', 'difficulty peaceful']:
+              'op Steve', 'lp user Steve permission set luckperms.log.notify false',
+              'time set noon', 'weather clear', 'difficulty peaceful']:
         cmd(c, pause=0.8)
     for gamerule in ('advance_time false', 'doDaylightCycle false', 'advance_weather false', 'doWeatherCycle false'):
         s.cmd(f'gamerule {gamerule}')
@@ -89,12 +87,13 @@ def setup():
     cmd('gamemode creative Builder', 'gamemode creative Alex', 'gamemode creative Steve')
 
 
-def stage(x, z, steve_back=4.6):
-    """Builder and Alex side by side facing south; Steve a few blocks south of them looking north."""
-    y = ground(x, z)
-    cmd(f'tp Builder {x - 0.8} {y} {z} 0 0', f'tp Alex {x + 0.8} {y} {z} 0 0',
-        f'tp Steve {x} {y} {z + steve_back} 180 6', pause=1)
-    return y
+def stage(x, z, steve_back=6.0, gap=2.2):
+    """Builder and Alex side by side facing west; Steve a few blocks west of them looking east, so the village is
+    behind them."""
+    place('Builder', x, z - gap, 90)
+    place('Alex', x, z + gap, 90)
+    place('Steve', x - steve_back, z, -90, 6)
+    time.sleep(1)
 
 
 def hero(x, z):
@@ -102,7 +101,7 @@ def hero(x, z):
     s.use('Steve').hud(False)
     time.sleep(3)
     say('Builder', 'Welcome to the server!', pause=0.2)
-    say('Alex', 'Thanks! Love the new tags <3', pause=1.2)
+    say('Alex', 'Love the new tags <3', pause=1.2)
     save('hero')
     s.use('Steve').hud(True)
 
@@ -119,7 +118,9 @@ def nametag_lines(x, z):
 
 def chat(x, z):
     stage(x, z)
-    cmd('clear Alex', 'give Alex minecraft:diamond_sword 1')
+    cmd('clear Alex', 'give Alex minecraft:diamond_sword 1', 'clear Steve')
+    s.use('Steve').key('F3+d')  # clears the chat history
+    time.sleep(1)
     say('Builder', 'Welcome to the server!')
     say('Alex', 'hi steve, check my <3 new sword [item]')
     say('Builder', 'Rules and map: https://nightbeam.dev/support :star:')
@@ -133,9 +134,9 @@ def chat(x, z):
 
 
 def hover_name():
-    # With guiScale 2 a chat line is 18 px tall; the newest line sits just above the input box.
-    # Builder's welcome is the fourth line from the bottom; its name starts after the "[Owner] " prefix.
-    s.use('Steve').move(110, 1080 - 34 - 18 * 4 - 9)
+    # Steve's client uses guiScale 3: a chat line is 27 px tall and the newest one is centred at y=947.
+    # Builder's welcome is the sixth line from the bottom (two of the messages wrap); "Builder" follows "[Owner] ".
+    s.use('Steve').move(190, 947 - 27 * 5)
     time.sleep(1.2)
 
 
@@ -159,29 +160,29 @@ def debug(x, z):
     s.use('Steve').key('Escape')
 
 
-def folia():
+def folia(x, z):
     """On a Folia server: Steve looks at Builder; the rank line floats above the vanilla name."""
-    y = ground(0, 0)
-    cmd(f'tp Builder -0.5 {y} 0.5 0 0', f'tp Steve -0.5 {y} 4.1 180 6')
-    s.use('Steve').hud(False)
+    place('Builder', x, z, 90)
+    place('Steve', x - 4.5, z, -90, 6)
+    # The HUD stays on: F1 would also hide the vanilla name this shot is about.
+    s.use('Steve').hud(True)
     time.sleep(3)
     say('Builder', 'Hello from Folia!', pause=1.0)
     save('folia')
-    s.use('Steve').hud(True)
 
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     wanted = sys.argv[1:] or ['hero', 'nametag-lines', 'chat', 'tablist', 'debug']
-    if wanted == ['folia']:
-        folia()
-        return
     setup()
     # The plains village of the showcase world (seed 7214950366214): /locate structure minecraft:village_plains.
     out = s.cmd('locate structure minecraft:village_plains')
     match = re.search(r'\[(-?\d+), ~?(-?\d+|~), (-?\d+)\]', out)
-    x, z = (int(match.group(1)) + 6, int(match.group(3)) + 6) if match else (0, 0)
-    scenes = {'hero': hero, 'nametag-lines': nametag_lines, 'chat': chat, 'tablist': tablist, 'debug': debug}
+    # A level patch of grass inside the village, 18 blocks south of the well; the camera looks east along it.
+    x, z = (int(match.group(1)) + 0.5, int(match.group(3)) + 18.5) if match else (0.5, 0.5)
+    print('village at', match.group(0) if match else None)
+    scenes = {'hero': hero, 'nametag-lines': nametag_lines, 'chat': chat, 'tablist': tablist, 'debug': debug,
+              'folia': folia}
     for name in wanted:
         scenes[name](x, z)
 

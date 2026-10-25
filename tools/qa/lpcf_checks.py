@@ -225,7 +225,7 @@ class Checks:
     def startup(self):
         log = self.server_log.read_text(errors='replace')
         self.check('startup', 'LPCF enabled', f'LPCF {VERSION} enabled on' in log)
-        mode = 'text displays above the vanilla name (Folia has no scoreboard teams), riding the player' if self.folia \
+        mode = 'Nametags: text displays, riding the player (which also hides the vanilla name)' if self.folia \
             else 'Nametags: text displays, following the player'
         self.check('startup', 'nametag mode logged', mode in log, mode)
         self.check('migration', '1.x data folder moved',
@@ -292,8 +292,8 @@ class Checks:
         ok, out = self.wait_passenger('lpcf-nametag', lambda o: o is not None and 'Admin' in o)
         info = self.info()
         if self.folia:
-            # No teams on Folia: the display carries the prefix line above the vanilla name.
-            self.check('nametag', 'nametag shows the prefix line', ok and 'Builder' not in (out or ''), out)
+            # No teams on Folia: the display rides the player, which hides the vanilla name, so it shows the full tag.
+            self.check('nametag', 'nametag shows prefix and name', ok and 'Builder' in (out or ''), out)
             self.check('nametag', 'and rides the player (Folia)', self.placed(info), info)
         else:
             self.check('nametag', 'nametag shows prefix and name', ok and 'Builder' in (out or ''), out)
@@ -365,8 +365,8 @@ class Checks:
         self.mark()
         self.say('Builder', '/lpcf debug')
         line = self.builder.wait(r'Nametag: ')
-        parts = (['text display above the vanilla name riding the player', 'shown: [Admin]'] if self.folia
-                 else ['text display (vanilla name hidden) following the player', 'shown: [Admin] Builder'])
+        parts = ['text display (vanilla name hidden), ' + ('riding the player' if self.folia else 'following the player'),
+                 'shown: [Admin] Builder']
         self.check('debug', '/lpcf debug explains the nametag', line is not None and all(p in line for p in parts), line)
         fmt = self.builder.wait(r'Chat format: ')
         self.check('debug', '/lpcf debug names the chat format', fmt is not None and 'chat-format' in fmt, fmt)

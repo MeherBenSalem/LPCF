@@ -41,7 +41,8 @@ import java.util.logging.Level;
  *   interpolation where the server has it (1.20.2+). Nothing rides the player, because Paper refuses to teleport a
  *   player carrying passengers: /home, /spawn and /tpa plugins and portals keep working.</li>
  *   <li><b>Ride</b> (Folia): the display rides the player. Folia teleports players together with their passengers,
- *   and a rider always stays in its player's region, so it never needs a cross-region move.</li>
+ *   and a rider always stays in its player's region, so it never needs a cross-region move. Clients never draw the
+ *   name of an entity carrying a passenger, so this also hides the vanilla name where Folia has no teams to do it.</li>
  * </ul>
  *
  * <p>Every player gets a loop on their own entity scheduler (their region thread on Folia). The loop keeps the
@@ -104,7 +105,7 @@ public final class TextTagService implements Listener {
     /** How displays keep up with their player on this server, for the startup log and /lpcf debug. */
     public String placement() {
         if (ride) {
-            return "riding the player";
+            return "riding the player (which also hides the vanilla name)";
         }
         return SET_TELEPORT_DURATION != null ? "following the player" : "following the player (no interpolation before 1.20.2)";
     }

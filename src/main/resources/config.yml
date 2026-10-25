@@ -80,14 +80,16 @@ replacements:
 # Nametags above heads
 # ---------------------------------------------------------------------------------------------------------------
 nametags:
-  # auto: text-display nametags (full colours, gradients, several lines) on Paper, Purpur and Folia.
+  # auto: text-display nametags (full colours, gradients, several lines) on Paper, Purpur and Folia. The vanilla
+  #       name is hidden: by a scoreboard team on Paper and Purpur, by the tag riding the player on Folia.
   # team: the classic scoreboard-team prefix/suffix from 'nametag-format' (16 colours, one line, not on Folia).
   # off:  leave nametags alone.
   style: auto
-  # Lines shown above the head where the vanilla name can be hidden (Paper, Purpur).
+  # Lines shown above the head.
   lines:
     - "{prefix}{username-color}{name}{suffix}"
-  # Lines shown above the vanilla name where it cannot be hidden (Folia has no scoreboard teams).
+  # Shown instead, above the vanilla name, on a server where the vanilla name cannot be hidden (no scoreboard teams
+  # and no Folia); you will not normally see these.
   lines-above-vanilla-name:
     - "{prefix}"
   # Hide the nametag while sneaking (otherwise it dims and stops showing through walls, like vanilla).

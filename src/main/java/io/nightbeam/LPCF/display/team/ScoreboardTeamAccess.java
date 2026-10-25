@@ -23,8 +23,8 @@ public final class ScoreboardTeamAccess {
 
     static final String UNSUPPORTED_MESSAGE =
             "Bukkit scoreboard teams are unavailable on this server (Folia does not implement them). "
-                    + "The vanilla name cannot be hidden, so LPCF shows 'nametags.lines-above-vanilla-name' above it; "
-                    + "tab-list names, chat and bubbles are unaffected.";
+                    + "LPCF's text-display nametags ride the player there, which hides the vanilla name as well; "
+                    + "'nametags.style: team' has no effect.";
 
     private final Supplier<Scoreboard> scoreboard;
     private final Logger logger;
