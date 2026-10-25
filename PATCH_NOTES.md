@@ -1,5 +1,18 @@
 # LPCF patch notes
 
+Full notes per release are in [patchnotes/](patchnotes/).
+
+## 2.0.0: Chat, Nametags & Bubbles
+- Text-display nametags above heads (gradients, several lines), on Paper, Purpur **and Folia**.
+- Chat bubbles, hover cards and click-to-message on names, mentions, clickable links, emoji shortcuts.
+- Tab-list header/footer and sorting by LuckPerms weight; per-group join, first-join and quit messages; world formats.
+- `/lpcf debug`, `/lpcf preview`, `/lpcf bubbles`.
+- One Java 17 jar for 1.20.1 to 26.3 again (1.2.4 and 1.2.5 only loaded on 26.x).
+- Fixed chat injection: player text is never parsed as a format or passed to PlaceholderAPI; `lpcf.colorcodes` no
+  longer allows click/hover tags.
+- Renamed to `LPCF` (data folder `plugins/LPCF`, moved automatically); config upgraded in place with a backup.
+- See [patchnotes/2.0.0.md](patchnotes/2.0.0.md).
+
 ## 1.2.5
 - Stop Folia **26.2** from failing `PlayerJoinEvent` with `UnsupportedOperationException` from `CraftScoreboard.registerNewTeam` (issue #1).
 - Keep Bukkit scoreboard nametags on Paper and other servers where team registration still works.

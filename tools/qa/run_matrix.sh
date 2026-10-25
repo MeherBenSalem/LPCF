@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs lpcf_checks.py on a fresh server for each build, with real vanilla clients under Xvfb:
 #   tools/qa/run_matrix.sh [platform:version ...]     (default: the full matrix below)
-# Needs build/libs/LPCF-<VERSION>.jar (./gradlew shadowJar). Results go to $QA_HOME/results/<platform>-<version>.txt
+# Needs build/libs/LPCF-<VERSION>.jar and build/qa/LPCF-QA-Helper.jar (./gradlew shadowJar qaHelperJar). Results go to $QA_HOME/results/<platform>-<version>.txt
 # with the server and client logs next to them; screenshots to $QA_HOME/shots/<platform>-<version>/.
 set -u
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)

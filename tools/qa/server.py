@@ -126,9 +126,10 @@ def prepare(platform: str, version: str, legacy_config: bool, normal_world: bool
     shutil.copy(modrinth_jar('placeholderapi', version, loader), plugins)
     shutil.copy(plugin_jar(), plugins)
     helper = ROOT / 'build' / 'qa' / 'LPCF-QA-Helper.jar'
-    if helper.exists():
-        # QA only: teleports through the Bukkit API like /home and /spawn plugins (./gradlew qaHelperJar).
-        shutil.copy(helper, plugins)
+    if not helper.exists():
+        raise SystemExit(f'{helper} not found: run ./gradlew qaHelperJar first')
+    # QA only: teleports through the Bukkit API like /home and /spawn plugins, and reports LPCF's displays.
+    shutil.copy(helper, plugins)
     # The PlaceholderAPI "player" expansion, for the format-side placeholder check. Fetched once by
     # `papi ecloud download Player` on any test server and kept in the cache.
     expansion = CACHE / 'Expansion-player.jar'
