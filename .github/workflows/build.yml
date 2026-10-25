@@ -1,0 +1,40 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+      - name: Unit tests and plugin jar
+        run: |
+          chmod +x gradlew
+          ./gradlew test shadowJar --stacktrace --no-daemon
+      - name: Jar runs on Java 17 (Minecraft 1.20.1 servers)
+        run: |
+          version=$(tr -d '[:space:]' < VERSION)
+          major=$(unzip -p "build/libs/LPCF-${version}.jar" io/nightbeam/LPCF/LpcfPlugin.class | head -c 8 | od -An -tu1 | awk '{print $8}')
+          echo "class file major version: $major"
+          test "$major" -eq 61
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Publish metadata
+        run: node .github/scripts/detect-jar-meta.test.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LPCF-jar
+          path: build/libs/LPCF-*.jar
