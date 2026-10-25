@@ -85,13 +85,18 @@ public final class PlayerFormatter {
         ));
     }
 
-    /** Several lines joined with newlines; blank results are dropped. */
+    /** Several lines joined with newlines; lines that come out blank are dropped (a nametag without a prefix). */
     public Component renderLines(List<String> lines, Player player, ChatFormatPlaceholders.Values values) {
+        return renderLines(lines, player, values, false);
+    }
+
+    /** Several lines joined with newlines; {@code keepBlank} keeps empty lines as spacers (hover cards). */
+    public Component renderLines(List<String> lines, Player player, ChatFormatPlaceholders.Values values, boolean keepBlank) {
         Component result = null;
         Component name = Component.text(player.getName());
         for (String line : lines) {
             Component rendered = render(line, player, values, name, player.displayName(), Component.empty(), TagResolver.empty());
-            if (PlainTextComponentSerializer.plainText().serialize(rendered).isBlank()) {
+            if (!keepBlank && PlainTextComponentSerializer.plainText().serialize(rendered).isBlank()) {
                 continue;
             }
             if (result == null) {

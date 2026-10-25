@@ -19,6 +19,8 @@ import org.bukkit.plugin.java.JavaPlugin;
  *   <li>{@code /qatp <player> <world> <x> <y> <z>}: teleports through the Bukkit API, the way /home, /spawn and /tpa
  *   plugins do. Logs {@code QA-TP <player> result=<true|false>}.</li>
  *   <li>{@code /qainfo <player>}: logs the player's world and position and the LPCF displays around them.</li>
+ *   <li>{@code /qaground <player> <x> <z> [yaw] [pitch]}: stands the player on the highest block there (for the
+ *   marketing screenshots) and logs that block.</li>
  * </ul>
  */
 public final class QaHelper extends JavaPlugin {
@@ -35,6 +37,21 @@ public final class QaHelper extends JavaPlugin {
             Location target = new Location(world, Double.parseDouble(args[2]), Double.parseDouble(args[3]), Double.parseDouble(args[4]));
             // teleportAsync is the Folia-safe API and exists on Paper too.
             player.teleportAsync(target).thenAccept(ok -> getLogger().info("QA-TP " + player.getName() + " result=" + ok));
+            return true;
+        }
+        if (command.getName().equals("qaground") && args.length >= 3) {
+            // Stand the player on the highest block at x, z (logged with that block, so water can be avoided).
+            double x = Double.parseDouble(args[1]);
+            double z = Double.parseDouble(args[2]);
+            float yaw = args.length > 3 ? Float.parseFloat(args[3]) : 0;
+            float pitch = args.length > 4 ? Float.parseFloat(args[4]) : 0;
+            World world = player.getWorld();
+            Bukkit.getRegionScheduler().execute(this, world, (int) Math.floor(x) >> 4, (int) Math.floor(z) >> 4, () -> {
+                org.bukkit.block.Block top = world.getHighestBlockAt((int) Math.floor(x), (int) Math.floor(z));
+                Location target = new Location(world, x, top.getY() + 1, z, yaw, pitch);
+                player.teleportAsync(target).thenAccept(ok -> getLogger().info(
+                        "QA-GROUND " + player.getName() + " y=" + (top.getY() + 1) + " block=" + top.getType().name().toLowerCase()));
+            });
             return true;
         }
         if (command.getName().equals("qainfo")) {

@@ -11,6 +11,9 @@ commands:
   qainfo:
     usage: /qainfo <player>
     permission: lpcfqa.tp
+  qaground:
+    usage: /qaground <player> <x> <z> [yaw] [pitch]
+    permission: lpcfqa.tp
 permissions:
   lpcfqa.tp:
     default: op

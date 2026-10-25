@@ -108,7 +108,7 @@ public final class ChatFormatterService {
         }
         Component result = name;
         if (!config.nameHoverLines().isEmpty()) {
-            result = result.hoverEvent(HoverEvent.showText(plugin.formatter().renderLines(config.nameHoverLines(), player, values)));
+            result = result.hoverEvent(HoverEvent.showText(plugin.formatter().renderLines(config.nameHoverLines(), player, values, true)));
         }
         String suggest = config.nameClickSuggest();
         if (suggest != null && !suggest.isEmpty()) {
