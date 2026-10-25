@@ -1,0 +1,16 @@
+name: LPCF-QA-Helper
+version: '1'
+main: io.nightbeam.lpcfqa.QaHelper
+api-version: '1.20'
+folia-supported: true
+description: QA only. Teleports players through the Bukkit API and reports LPCF displays for tools/qa.
+commands:
+  qatp:
+    usage: /qatp <player> <world> <x> <y> <z>
+    permission: lpcfqa.tp
+  qainfo:
+    usage: /qainfo <player>
+    permission: lpcfqa.tp
+permissions:
+  lpcfqa.tp:
+    default: op
