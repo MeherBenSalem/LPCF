@@ -1,24 +1,52 @@
-name: LuckPermsChatFormatterFolia
+name: LPCF
 version: '${version}'
-main: io.nightbeam.LPCF.LuckPermsChatFormatterFolia
-api-version: '1.21'
+main: io.nightbeam.LPCF.LpcfPlugin
+api-version: '1.20'
 folia-supported: true
 authors: [NightBeam]
+website: https://github.com/MeherBenSalem/LPCF
 depend: [LuckPerms]
 softdepend: [PlaceholderAPI]
-description: Paper/Folia-compatible LuckPerms chat formatter with MiniMessage support.
+description: "LuckPerms chat, text-display nametags, chat bubbles and tab list for Paper, Purpur and Folia."
 commands:
   lpcf:
-    description: Reload LPCF configuration.
-    permission: lpcf.reload
-    usage: "Usage: /lpcf reload"
+    description: LPCF commands (reload, debug, preview, bubbles).
+    usage: "Usage: /lpcf <reload|debug|preview|bubbles|help>"
 permissions:
+  lpcf.admin:
+    description: Every LPCF admin command.
+    default: op
+    children:
+      lpcf.reload: true
+      lpcf.debug: true
+      lpcf.preview: true
   lpcf.reload:
-    description: Allows reloading the LPCF configuration.
+    description: Allows reloading the LPCF configuration (also receives update notices).
+    default: op
+  lpcf.debug:
+    description: Allows /lpcf debug.
+    default: op
+  lpcf.preview:
+    description: Allows /lpcf preview.
     default: op
   lpcf.colorcodes:
-    description: Allows MiniMessage formatting in chat messages.
+    description: Allows colours, decorations, gradients and rainbow (MiniMessage and & codes) in chat messages.
     default: false
   lpcf.itemplaceholder:
     description: Allows using [ITEM] in chat.
+    default: true
+  lpcf.mention:
+    description: Mentions of online players are highlighted and notify them.
+    default: true
+  lpcf.links:
+    description: Links in chat become clickable.
+    default: true
+  lpcf.replacements:
+    description: Emoji shortcuts and other replacements apply to the player's chat.
+    default: true
+  lpcf.bubbles:
+    description: The player's public chat messages show as bubbles above their head.
+    default: true
+  lpcf.bubbles.toggle:
+    description: Allows /lpcf bubbles to turn your own bubbles on or off.
     default: true

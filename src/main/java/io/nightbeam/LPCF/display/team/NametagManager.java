@@ -1,6 +1,6 @@
 package io.nightbeam.LPCF.display.team;
 
-import io.nightbeam.LPCF.LuckPermsChatFormatterFolia;
+import io.nightbeam.LPCF.LpcfPlugin;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -23,12 +23,17 @@ public class NametagManager {
     private final Map<String, FakeTeam> CACHED_FAKE_TEAMS = new ConcurrentHashMap<>();
     private final ScoreboardTeamAccess teamAccess;
 
-    public NametagManager(final LuckPermsChatFormatterFolia plugin) {
+    public NametagManager(final LpcfPlugin plugin) {
         this(ScoreboardTeamAccess.forServer(plugin.getLogger()));
     }
 
     NametagManager(final ScoreboardTeamAccess teamAccess) {
         this.teamAccess = teamAccess;
+    }
+
+    /** False on servers without Bukkit scoreboard teams (Folia). */
+    public boolean teamsSupported() {
+        return teamAccess.isSupported();
     }
 
     @Nullable

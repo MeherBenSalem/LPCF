@@ -22,10 +22,9 @@ import java.util.logging.Logger;
 public final class ScoreboardTeamAccess {
 
     static final String UNSUPPORTED_MESSAGE =
-            "Bukkit scoreboard teams are unavailable on this server. "
-                    + "Tab-list names will still be formatted; above-head nametag prefixes cannot be applied "
-                    + "because CraftScoreboard.registerNewTeam is not implemented "
-                    + "(Folia throws UnsupportedOperationException).";
+            "Bukkit scoreboard teams are unavailable on this server (Folia does not implement them). "
+                    + "The vanilla name cannot be hidden, so LPCF shows 'nametags.lines-above-vanilla-name' above it; "
+                    + "tab-list names, chat and bubbles are unaffected.";
 
     private final Supplier<Scoreboard> scoreboard;
     private final Logger logger;
@@ -148,9 +147,10 @@ public final class ScoreboardTeamAccess {
         }
     }
 
+    // Expected on Folia (known at startup), so information rather than a warning.
     private void noteUnsupported() {
         if (loggedUnsupported.compareAndSet(false, true) && logger != null) {
-            logger.warning(UNSUPPORTED_MESSAGE);
+            logger.info(UNSUPPORTED_MESSAGE);
         }
     }
 

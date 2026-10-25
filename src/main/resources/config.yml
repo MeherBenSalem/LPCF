@@ -1,41 +1,158 @@
-# LuckPermsChatFormatterFolia Configuration
-# Please read the https://luckperms.net/wiki/Prefixes,-Suffixes-&-Meta before you set up.
+# LPCF: chat, nametags, tab list and chat bubbles from your LuckPerms prefixes.
+# LuckPerms prefixes, suffixes and meta: https://luckperms.net/wiki/Prefixes,-Suffixes-&-Meta
 #
-# Placeholders:
-# {message} - the chat message
-# {name} - the player's name
-# {displayname} - the player's display name / nickname
-# {world} - the world name of the player's current world
-# {prefix} - the player's highest priority prefix
-# {suffix} - the player's highest priority suffix
-# {prefixes} - the player's prefixes sorted by the highest priority
-# {suffixes} - the player's suffixes sorted by the highest priority
-# {username-color} - the player's or the group's username color
-# {message-color} - the player's or the group's message color
+# Placeholders (every format below):
+#   {name}           the player's name           {displayname}    the display name / nickname
+#   {prefix}         highest priority prefix     {suffix}         highest priority suffix
+#   {prefixes}       all prefixes by priority    {suffixes}       all suffixes by priority
+#   {group}          primary LuckPerms group     {world}          the player's world
+#   {username-color} LuckPerms meta "username-color"
+#   {message-color}  LuckPerms meta "message-color"
+#   {message}        the chat message (chat-format, group/track/world formats and bubbles only)
+#   Any %placeholder% from PlaceholderAPI when it is installed (never applied to what players type).
+#
+# Formats accept MiniMessage (https://docs.advntr.dev/minimessage/format.html) and legacy codes such as
+# '&l', '&a', '&#RRGGBB'. Run '/lpcf reload' after editing (permission lpcf.reload).
+# '/lpcf debug [player]' shows which prefix, group and format a player gets.
 
-# Prefixes, suffixes, and formats support MiniMessage tags and legacy codes like '&l', '&a', and '&#RRGGBB'.
+# Do not change: used to upgrade this file.
+config-version: 2
 
-# To reload the configuration, run '/lpcf reload'. Make sure you have the 'lpcf.reload' permission assigned.
-# More information can be found in the README.
-chat-format: "{prefix}{name}<dark_gray> »<reset> {message}"
+# ---------------------------------------------------------------------------------------------------------------
+# Chat
+# ---------------------------------------------------------------------------------------------------------------
+chat-format: "{prefix}{username-color}{name}<dark_gray> »<reset> {message-color}{message}"
 
-# Name tag format applied to the player's display name.
-# Supports the same placeholders as chat-format except {message}.
-nametag-format: "{prefix}{name}"
-
-# Set the format per group.
-# Note: Option for more advanced users. Remove comments to use.
+# A format per LuckPerms primary group (takes priority over everything else).
 group-formats:
-#  default: "<gray>[User]</gray> {name}<dark_gray> »<reset> {message}"
+#  admin: "<gradient:#ff5f6d:#ffc371>[Admin]</gradient> {name}<dark_gray> »<reset> {message}"
 
-# Set the format per track
-# Note: Group formatting takes priority over track formatting, ensure user isn't in a group with corresponding format to apply track format
+# A format per track: used when the player's primary group is on the track and has no group format.
 track-formats:
 #  staff_track: "<gold>[Staff]</gold> {name}<dark_gray> »<reset> {message}"
 
-# Should the [ITEM] placeholder be enabled
+# A format per world: used when neither a group nor a track format matched.
+world-formats:
+#  world_nether: "<red>[Nether]</red> {prefix}{name}<dark_gray> »<reset> {message}"
+
+# Should the [ITEM] placeholder be enabled (permission lpcf.itemplaceholder)
 use-item-placeholder: true
 
+# Hover card and click action on the player's name in chat.
+name-hover:
+  enabled: true
+  lines:
+    - "{prefix}{username-color}{name}"
+    - "<gray>Rank: <white>{group}"
+    - "<gray>World: <white>{world}"
+    - ""
+    - "<yellow>Click to message"
+  # Put this command in the player's chat box when they click a name. Empty disables the click.
+  click-suggest: "/msg {name} "
+
+# Highlight online player names typed in chat ("@Steve" or "Steve") and notify that player (permission lpcf.mention).
+mentions:
+  enabled: true
+  format: "<yellow>@{name}</yellow>"
+  # Also match names typed without '@'.
+  without-at: true
+  sound: "minecraft:entity.experience_orb.pickup"
+  actionbar: "<yellow>{sender} mentioned you"
+
+# Turn URLs in chat into clickable links (permission lpcf.links).
+links:
+  enabled: true
+  format: "<aqua><u>{url}</u></aqua>"
+  hover: "<gray>Click to open {url}"
+
+# Text replaced in chat messages (permission lpcf.replacements). Values accept MiniMessage.
+replacements:
+  enabled: true
+  list:
+    "<3": "<red>❤</red>"
+    ":star:": "<gold>★</gold>"
+    ":check:": "<green>✔</green>"
+    ":x:": "<red>✖</red>"
+    ":shrug:": "¯\\_(ツ)_/¯"
+    ":tableflip:": "(╯°□°）╯︵ ┻━┻"
+
+# ---------------------------------------------------------------------------------------------------------------
+# Nametags above heads
+# ---------------------------------------------------------------------------------------------------------------
+nametags:
+  # auto: text-display nametags (full colours, gradients, several lines) on Paper, Purpur and Folia.
+  # team: the classic scoreboard-team prefix/suffix from 'nametag-format' (16 colours, one line, not on Folia).
+  # off:  leave nametags alone.
+  style: auto
+  # Lines shown above the head where the vanilla name can be hidden (Paper, Purpur).
+  lines:
+    - "{prefix}{username-color}{name}{suffix}"
+  # Lines shown above the vanilla name where it cannot be hidden (Folia has no scoreboard teams).
+  lines-above-vanilla-name:
+    - "{prefix}"
+  # Hide the nametag while sneaking (otherwise it dims and stops showing through walls, like vanilla).
+  hide-when-sneaking: false
+  # Extra height in blocks.
+  offset: 0.0
+  # How often (ticks) nametags refresh their text and follow teleports.
+  update-interval-ticks: 10
+
+# Tab-list name format, and the nametag for 'nametags.style: team'. Same placeholders, no {message}.
+nametag-format: "{prefix}{username-color}{name}"
+
+# ---------------------------------------------------------------------------------------------------------------
+# Chat bubbles: public messages float above the speaker (permission lpcf.bubbles; '/lpcf bubbles' toggles them).
+# ---------------------------------------------------------------------------------------------------------------
+bubbles:
+  enabled: true
+  format: "<white>{message}"
+  # Seconds on screen: min + per-character, capped at max.
+  min-seconds: 3.0
+  seconds-per-character: 0.08
+  max-seconds: 10.0
+  # Wrap width (the client's text display line width, in pixels).
+  line-width: 180
+  # Messages longer than this are shortened with "...".
+  max-characters: 120
+
+# ---------------------------------------------------------------------------------------------------------------
+# Tab list
+# ---------------------------------------------------------------------------------------------------------------
+tab:
+  # Sort the tab list by LuckPerms group weight (highest first). Minecraft 1.21.2+ servers (Folia included) use the
+  # player-list order; older servers sort through the nametag team names.
+  sort-by-weight: true
+  header-footer:
+    enabled: true
+    # Extra placeholders here: {online}, {max-players}, {ping}.
+    header:
+      - ""
+      - "<gradient:#ff7a59:#ffd166><bold>Welcome to the server</bold></gradient>"
+      - ""
+    footer:
+      - ""
+      - "<gray>{online}<dark_gray>/</dark_gray>{max-players} online <dark_gray>·</dark_gray> {ping} ms"
+      - ""
+    update-interval-ticks: 40
+
+# ---------------------------------------------------------------------------------------------------------------
+# Join and quit messages
+# ---------------------------------------------------------------------------------------------------------------
+join-quit:
+  enabled: true
+  join: "<dark_gray>[<green>+</green>]</dark_gray> {prefix}{username-color}{name}"
+  quit: "<dark_gray>[<red>-</red>]</dark_gray> {prefix}{username-color}{name}"
+  # Empty uses 'join'.
+  first-join: "<light_purple>✦ Welcome {name} to the server for the first time!"
+  # Per-group overrides.
+  group-join:
+#    vip: "<gold>✦ VIP {name} has arrived!"
+  group-quit:
+#    vip: "<gold>✦ VIP {name} left."
+
+# ---------------------------------------------------------------------------------------------------------------
+# Misc
+# ---------------------------------------------------------------------------------------------------------------
 # Message sent after /lpcf reload
 reload-message: "<green>LPCF configuration reloaded successfully!"
 

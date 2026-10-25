@@ -1,6 +1,6 @@
 package io.nightbeam.LPCF.util;
 
-import io.nightbeam.LPCF.LuckPermsChatFormatterFolia;
+import io.nightbeam.LPCF.LpcfPlugin;
 import io.nightbeam.LPCF.config.PluginConfig;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.entity.Player;
@@ -24,7 +24,7 @@ public final class UpdateChecker implements Listener {
     );
     private static final Pattern VERSION_NUMBER_PATTERN = Pattern.compile("\"version_number\"\\s*:\\s*\"([^\"]+)\"");
 
-    private final LuckPermsChatFormatterFolia plugin;
+    private final LpcfPlugin plugin;
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
             .build();
@@ -32,7 +32,7 @@ public final class UpdateChecker implements Listener {
 
     private volatile String latestVersion;
 
-    public UpdateChecker(LuckPermsChatFormatterFolia plugin) {
+    public UpdateChecker(LpcfPlugin plugin) {
         this.plugin = plugin;
     }
 
@@ -45,7 +45,7 @@ public final class UpdateChecker implements Listener {
         SchedulerUtil.runAsync(plugin, () -> {
             try {
                 HttpRequest request = HttpRequest.newBuilder(MODRINTH_VERSIONS)
-                        .header("User-Agent", "LuckPermsChatFormatterFolia/" + plugin.getPluginMeta().getVersion())
+                        .header("User-Agent", "LPCF/" + plugin.getPluginMeta().getVersion())
                         .timeout(Duration.ofSeconds(15))
                         .GET()
                         .build();
