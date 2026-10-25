@@ -7,6 +7,7 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -242,6 +243,7 @@ public final class TextTagService implements Listener {
                 if (state.bubble != null) {
                     if (state.bubbleChanged || state.bubble != before) {
                         state.bubble.text(state.bubbleText);
+                        applyBackground(state.bubble, config.bubbleBackground());
                         state.bubbleChanged = false;
                     }
                     setLift(state.bubble, lift);
@@ -345,6 +347,16 @@ public final class TextTagService implements Listener {
         }
         display.setTransformation(new Transformation(
                 new Vector3f(0, (float) lift, 0), new AxisAngle4f(), new Vector3f(1, 1, 1), new AxisAngle4f()));
+    }
+
+    // Marked as draft API ("subject to change") since 1.19.4; without it the bubble keeps the vanilla background.
+    @SuppressWarnings("deprecation")
+    private static void applyBackground(TextDisplay display, @Nullable Integer argb) {
+        try {
+            display.setBackgroundColor(argb == null ? null : Color.fromARGB(argb));
+        } catch (LinkageError | IllegalArgumentException ex) {
+            // Keep the default background.
+        }
     }
 
     private void updateText(TextDisplay display, Component text) {

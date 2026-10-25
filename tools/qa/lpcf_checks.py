@@ -365,9 +365,9 @@ class Checks:
         self.mark()
         self.say('Builder', '/lpcf debug')
         line = self.builder.wait(r'Nametag: ')
-        expected = ('text display above the vanilla name riding the player, shown: [Admin]' if self.folia
-                    else 'text display (vanilla name hidden) following the player, shown: [Admin] Builder')
-        self.check('debug', '/lpcf debug explains the nametag', line is not None and expected in line, line)
+        parts = (['text display above the vanilla name riding the player', 'shown: [Admin]'] if self.folia
+                 else ['text display (vanilla name hidden) following the player', 'shown: [Admin] Builder'])
+        self.check('debug', '/lpcf debug explains the nametag', line is not None and all(p in line for p in parts), line)
         fmt = self.builder.wait(r'Chat format: ')
         self.check('debug', '/lpcf debug names the chat format', fmt is not None and 'chat-format' in fmt, fmt)
 

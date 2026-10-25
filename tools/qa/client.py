@@ -56,9 +56,9 @@ class Session:
             clients = Path(os.environ.get('QA_HOME', '/tmp/lpcf-qa')) / 'clients'
             pid_file = clients / f'{self.active}.pid'
             if pid_file.exists():
-                # Newer clients tell X their process id (--all: every condition must match, not any).
-                out = subprocess.run(['xdotool', 'search', '--all', '--onlyvisible', '--pid', pid_file.read_text().strip(),
-                                      '--name', 'Minecraft'], env=self.env, capture_output=True, text=True).stdout.split()
+                # Newer clients tell X their process id. (Their title is only in _NET_WM_NAME, so no --name here.)
+                out = subprocess.run(['xdotool', 'search', '--onlyvisible', '--pid', pid_file.read_text().strip()],
+                                     env=self.env, capture_output=True, text=True).stdout.split()
                 if out:
                     return out[-1]
             # Older clients (GLFW) do not: use the window mcclient.py saw appear when it launched this client.

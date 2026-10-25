@@ -61,6 +61,7 @@ public final class PluginConfig {
 
     private boolean bubblesEnabled;
     private String bubbleFormat;
+    private Integer bubbleBackground;
     private double bubbleMinSeconds;
     private double bubbleSecondsPerChar;
     private double bubbleMaxSeconds;
@@ -127,6 +128,7 @@ public final class PluginConfig {
 
         this.bubblesEnabled = config.getBoolean("bubbles.enabled", true);
         this.bubbleFormat = config.getString("bubbles.format", "<white>{message}");
+        this.bubbleBackground = parseArgb(config.getString("bubbles.background", "default"));
         this.bubbleMinSeconds = config.getDouble("bubbles.min-seconds", 3.0);
         this.bubbleSecondsPerChar = config.getDouble("bubbles.seconds-per-character", 0.08);
         this.bubbleMaxSeconds = config.getDouble("bubbles.max-seconds", 10.0);
@@ -183,6 +185,8 @@ public final class PluginConfig {
 
     public boolean bubblesEnabled() { return bubblesEnabled; }
     public String bubbleFormat() { return bubbleFormat; }
+    /** ARGB, or null for the vanilla background. */
+    public Integer bubbleBackground() { return bubbleBackground; }
     public double bubbleMinSeconds() { return bubbleMinSeconds; }
     public double bubbleSecondsPerChar() { return bubbleSecondsPerChar; }
     public double bubbleMaxSeconds() { return bubbleMaxSeconds; }
@@ -201,6 +205,22 @@ public final class PluginConfig {
     public String firstJoinFormat() { return firstJoinFormat; }
     public Map<String, String> groupJoinFormats() { return groupJoinFormats; }
     public Map<String, String> groupQuitFormats() { return groupQuitFormats; }
+
+    /** "#AARRGGBB" or "#RRGGBB" (opaque) to ARGB; anything else (such as "default") to null. */
+    static Integer parseArgb(String value) {
+        if (value == null) {
+            return null;
+        }
+        String hex = value.trim();
+        if (hex.startsWith("#")) {
+            hex = hex.substring(1);
+        }
+        if (!hex.matches("(?i)[0-9a-f]{6}|[0-9a-f]{8}")) {
+            return null;
+        }
+        long argb = Long.parseLong(hex, 16);
+        return (int) (hex.length() == 6 ? 0xFF000000L | argb : argb);
+    }
 
     private Map<String, String> readSectionMap(String path) {
         ConfigurationSection section = config.getConfigurationSection(path);
