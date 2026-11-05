@@ -1,5 +1,9 @@
 ![LPCF: Chat, Nametags & Bubbles](https://raw.githubusercontent.com/MeherBenSalem/LPCF/main/marketing/images/banner.png)
 
+**[Discord](https://discord.gg/TJc3CxR4jK) · [Premium plugins](https://nightbeam.dev/store) · [Support NightBeam](https://nightbeam.dev/support) · [NightBeam Pro](https://nightbeam.dev/memberships) · [All projects](https://nightbeam.dev/projects)**
+
+> **Running a server?** NightBeam's premium plugins are on [BuiltByBit](https://nightbeam.dev/store): NightWatch Pro anti-cheat, Astral Core and more.
+
 **Your LuckPerms ranks everywhere players look.** LPCF puts your prefixes in chat, **above every player's head** and
 in the tab list, with full gradients and hex colours. Public chat pops up as a **bubble** over the speaker, names in
 chat show a hover card and open a private message on click, and `@mentions` ping the player. Nothing to install on
@@ -15,10 +19,10 @@ Version 2.0, **Chat, Nametags & Bubbles**, turns a chat formatter into the rank 
 - **Chat bubbles** over the player who is talking
 - **Hover cards and click-to-message** on names, **@mentions** with a ping, **clickable links**, **emoji shortcuts**
 - **Tab list** sorted by LuckPerms weight, with a header and footer
-- **Join, first-join and quit messages** per group, and **world formats**
+- **Join, new-player and quit messages** per group, and **world formats**
 - **`/lpcf debug`** answers "why is my prefix not showing?"
 - **Safer chat**: what players type can no longer trigger placeholders or click events
-- **1.20.1 and 1.21.x work again** (1.2.4 and 1.2.5 only loaded on 26.x), and your 1.x config carries over
+- **1.20.1 and 1.21.x work again** (1.2.4 and 1.2.5 loaded on 26.x and nothing older), and your 1.x config carries over
 
 ![Nametags](https://raw.githubusercontent.com/MeherBenSalem/LPCF/main/marketing/images/header-nametags.png)
 
@@ -40,8 +44,8 @@ gradients, hex colours, as many lines as you like and any PlaceholderAPI placeho
 ![See who's talking](https://raw.githubusercontent.com/MeherBenSalem/LPCF/main/marketing/images/card-bubbles.png)
 
 When a player chats, the message floats above their head for 3 to 10 seconds (longer messages stay longer), so
-everyone nearby sees who said what. Only messages that reach every player get a bubble: when another plugin sends a
-message to a channel, staff or party chat only, or cancels it (a mute), there is no bubble. Players turn their own
+everyone nearby sees who said what. A bubble appears just for messages that reach every player: when another plugin sends a
+message to a channel, staff or party chat alone, or cancels it (a mute), there is no bubble. Players turn their own
 bubbles off with `/lpcf bubbles off`.
 
 ![Chat](https://raw.githubusercontent.com/MeherBenSalem/LPCF/main/marketing/images/header-chat.png)
@@ -60,9 +64,9 @@ bubbles off with `/lpcf bubbles off`.
 
 ![Sorted by rank](https://raw.githubusercontent.com/MeherBenSalem/LPCF/main/marketing/images/card-tab.png)
 
-The tab list shows your `nametag-format`, sorted by LuckPerms weight (highest first: the group weight on 1.21.2 and
+The tab list shows your `nametag-format`, sorted by LuckPerms weight (highest at the top: the group weight on 1.21.2 and
 newer, Folia included; the prefix weight through team names before that, except on Folia), under a header and footer
-with `{online}`, `{max-players}`, `{ping}` and placeholders. Join, first-join and quit messages can differ per group.
+with `{online}`, `{max-players}`, `{ping}` and placeholders. Join, new-player and quit messages can differ per group.
 
 ![Safe chat](https://raw.githubusercontent.com/MeherBenSalem/LPCF/main/marketing/images/header-safe.png)
 
@@ -81,7 +85,7 @@ and why**, and what their nametag shows.
 |---------|------------|---------|------|
 | `/lpcf reload` | `lpcf.reload` | op | Reload `config.yml` |
 | `/lpcf debug [player]` | `lpcf.debug` | op | Group, prefix, suffix, chosen format, nametag |
-| `/lpcf preview <message>` | `lpcf.preview` | op | Your chat line, shown only to you |
+| `/lpcf preview <message>` | `lpcf.preview` | op | Your chat line, shown just to you |
 | `/lpcf bubbles [on/off]` | `lpcf.bubbles.toggle` | everyone | Your own chat bubbles |
 
 Other permissions: `lpcf.colorcodes` (styling in chat, nobody by default), and `lpcf.mention`, `lpcf.links`,
@@ -166,4 +170,14 @@ players and spectators have no tag and no bubbles.
 
 ![Divider](https://raw.githubusercontent.com/MeherBenSalem/LPCF/main/marketing/images/divider.png)
 
-[Discord](https://discord.gg/SAmd9fhNhr) · [Source and issues](https://github.com/MeherBenSalem/LPCF) · [Support us](https://nightbeam.dev/support) · Made by NightBeam Studio
+---
+
+### More from NightBeam Studio
+
+- **[Remnants: Ashen Legacy](https://www.curseforge.com/minecraft/modpacks/remnants-ashen-legacy)**: the story-driven soulslike RPG modpack built on NightBeam's mods
+- **[Premium server plugins](https://nightbeam.dev/store)**: anti-cheat, ranked PvP, SMP setups and more on BuiltByBit
+- **[NightBeam Pro](https://nightbeam.dev/memberships)**: the model library and NightBeam Forge credits, from $5 a month
+- **[Discord](https://discord.gg/TJc3CxR4jK)**: support, bug reports, suggestions and early looks
+- **[Support NightBeam](https://nightbeam.dev/support)**: help keep every mod free
+
+**Follow:** [YouTube](https://www.youtube.com/@nightbeamstudio) · [Instagram](https://www.instagram.com/nightbeamstudio/) · [X](https://x.com/NightBeamLLC) · [Facebook](https://www.facebook.com/profile.php?id=61574823331471) · [Source and issues](https://github.com/MeherBenSalem/LPCF)
