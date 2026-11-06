@@ -1,6 +1,6 @@
 ![LPCF: Chat, Nametags & Bubbles](https://raw.githubusercontent.com/MeherBenSalem/LPCF/main/marketing/images/banner.png)
 
-**[Discord](https://discord.gg/TJc3CxR4jK) · [Source and issues](https://github.com/MeherBenSalem/LPCF)**
+**[Docs](https://nightbeam.dev/docs/lpcf) · [Discord](https://discord.gg/TJc3CxR4jK) · [Source and issues](https://github.com/MeherBenSalem/LPCF)**
 
 **Your LuckPerms ranks everywhere players look.** LPCF puts your prefixes in chat, **above every player's head** and
 in the tab list, with full gradients and hex colours. Public chat pops up as a **bubble** over the speaker, names in
