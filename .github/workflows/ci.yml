@@ -1,0 +1,86 @@
+# NightBeam plugin CI: unit tests, the plugin.yml / bStats / Java 17 check, and smoke boots on real servers
+# (Paper 1.20.1, Paper 26.3 and the newest Folia) with LuckPerms installed. The in-game QA with real clients is
+# tools/qa (run by hand).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+      - name: Unit tests and plugin jar
+        run: |
+          chmod +x gradlew
+          ./gradlew test shadowJar --stacktrace --no-daemon
+      - name: Check plugin.yml, bStats ID and Java 17 bytecode
+        run: python3 scripts/check_plugin_yml.py --jar "build/libs/LPCF-$(tr -d '[:space:]' < VERSION).jar"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Publisher script tests (publish metadata, same-day guard)
+        run: |
+          node .github/scripts/detect-jar-meta.test.js
+          node --test scripts/*.test.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LPCF-jar
+          path: build/libs/LPCF-*.jar
+          if-no-files-found: error
+
+  smoke:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Paper 1.20.1
+            project: paper
+            version: "1.20.1"
+            java: "17"
+          - name: Paper 26.3
+            project: paper
+            version: "26.3"
+            java: "25"
+          - name: Folia (newest)
+            project: folia
+            version: latest
+            java: "25"
+    name: Smoke ${{ matrix.name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: LPCF-jar
+          path: artifact
+      - uses: actions/setup-java@v4
+        id: java
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+      - name: Boot ${{ matrix.name }} with LuckPerms
+        env:
+          JAVA_BIN: ${{ steps.java.outputs.path }}/bin/java
+        run: scripts/smoke_boot.sh ${{ matrix.project }} ${{ matrix.version }} "$(ls artifact/LPCF-*.jar | head -1)" modrinth:luckperms
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-log-${{ matrix.project }}-${{ matrix.version }}
+          path: build/smoke/*/server.log
+          if-no-files-found: ignore

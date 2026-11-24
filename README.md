@@ -31,6 +31,10 @@ Requires [LuckPerms](https://luckperms.net/). [PlaceholderAPI](https://modrinth.
 
 ## Compatibility
 
+Supported versions: Paper and Folia 1.20 to 26.3, Java 17+ (one jar for all of them).
+
+Metrics: bStats plugin ID 33654, https://bstats.org/plugin/bukkit/LPCF/33654
+
 | Server | Minecraft | Java | Notes |
 |--------|-----------|------|-------|
 | Paper | 1.20.1 to 26.3 | 17+ (the server's own) | Everything |
@@ -117,6 +121,14 @@ Any JDK 17 or newer:
 ```
 
 Output: `build/libs/LPCF-<version>.jar` (Java 17 bytecode, compiled against the Paper 1.20.1 API).
+Tests: `./gradlew test` runs the JUnit 5 unit tests. CI (`.github/workflows/ci.yml`) runs them on every push to
+`main`, then `python3 scripts/check_plugin_yml.py` (api-version `'1.20'`, `folia-supported`, the bStats ID and Java 17
+bytecode in the built jar) and a smoke boot with LuckPerms on Paper 1.20.1, Paper 26.3 and the newest Folia:
+
+```bash
+scripts/smoke_boot.sh paper 26.3 build/libs/LPCF-<version>.jar modrinth:luckperms
+```
+
 `tools/qa/` runs the in-game checks on real servers and clients; see [CONTRIBUTING](CONTRIBUTING.md).
 
 ## Publishing (maintainers)
@@ -124,6 +136,7 @@ Output: `build/libs/LPCF-<version>.jar` (Java 17 bytecode, compiled against the 
 `.github/workflows/publish.yml` uploads `releases/LPCF-<version>.jar` to Modrinth and CurseForge (Actions > Publish >
 Run workflow, or a `v*.*.*` tag). Secrets: `MODRINTH_TOKEN`, `CURSEFORGE_TOKEN`, `CURSEFORGE_API_KEY`. Project ids
 default to Modrinth `cq7XqCTD` and CurseForge `1483836` (override with the `MODRINTH_ID` / `CURSEFORGE_ID` variables).
+A same-day guard stops a second release on the same day (Africa/Tunis); prove a release first with `dry_run=true`.
 
 ## Links
 

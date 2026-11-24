@@ -37,6 +37,9 @@ import java.util.logging.Level;
 
 public final class LpcfPlugin extends JavaPlugin {
 
+    /** bStats plugin ID (https://bstats.org/plugin/bukkit/LPCF/33654); also bstats-id in plugin.yml. */
+    static final int BSTATS_ID = 33654;
+
     /** The plugin's name and data folder up to 1.2.x. */
     static final String LEGACY_NAME = "LuckPermsChatFormatterFolia";
 
@@ -75,7 +78,7 @@ public final class LpcfPlugin extends JavaPlugin {
 
         loadConfiguration();
 
-        new Metrics(this, 33654);
+        new Metrics(this, BSTATS_ID);
 
         this.formatter = new PlayerFormatter(this);
         this.chatFormatter = new ChatFormatterService(this);
