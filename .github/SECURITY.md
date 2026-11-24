@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Security fixes are applied to the latest released version of LPCF on Modrinth. Older releases may not receive patches.
+Security fixes are applied to the latest released version of LPCF on CurseForge. Older releases may not receive patches.
 
 ## Reporting a vulnerability
 

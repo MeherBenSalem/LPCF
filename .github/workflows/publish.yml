@@ -1,16 +1,16 @@
-# Publish LPCF to Modrinth + CurseForge on version tags or by hand.
+# Publish LPCF to CurseForge on version tags or by hand (NightBeam convention: CurseForge only since 24 Nov 2026).
 # One plugin jar for every supported server: releases/LPCF-{version}.jar (built and QA-tested before release) is
 # preferred; without it the jar is built here. Game versions, loaders and dependencies come from
 # .github/scripts/detect-jar-meta.js.
 #
-# Org/repo secrets:
-#   MODRINTH_TOKEN
-#   CURSEFORGE_TOKEN
-#   CURSEFORGE_API_KEY   (only used when the upload API cannot list game versions)
+# Secrets:
+#   CURSEFORGE_TOKEN     (upload)
+#   CURSEFORGE_API_KEY   (Core API, for the same-day guard)
 #
-# Repo variables (optional; default to this project's ids):
-#   MODRINTH_ID      (cq7XqCTD)
+# Repo variable (optional; defaults to this project's id):
 #   CURSEFORGE_ID    (1483836)
+#
+# The existing Modrinth project stays up as it is but gets no new versions.
 #
 # Usage after a release build is ready (jar in releases/, VERSION file matching):
 #   Actions > Publish > Run workflow: version=2.0.0, dry_run=true first, then dry_run=false
@@ -34,14 +34,6 @@ on:
         required: false
       dry_run:
         description: Build and check everything, skip uploads (true/false)
-        required: false
-        default: "false"
-      platforms:
-        description: "modrinth, curseforge, or both"
-        required: false
-        default: "both"
-      update_listing:
-        description: "Also update the Modrinth description, summary and icon from marketing/ (true/false)"
         required: false
         default: "false"
 
@@ -69,7 +61,7 @@ jobs:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
           GITHUB_TOKEN: ${{ github.token }}
           PUBLISH_WORKFLOW: publish.yml
-          UPLOAD_STEP: Upload Modrinth + CurseForge|Upload CurseForge
+          UPLOAD_STEP: Upload CurseForge|Upload Modrinth + CurseForge
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
           node --test scripts/same_day_guard.test.mjs
@@ -165,84 +157,36 @@ jobs:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
           GITHUB_TOKEN: ${{ github.token }}
           PUBLISH_WORKFLOW: publish.yml
-          UPLOAD_STEP: Upload Modrinth + CurseForge|Upload CurseForge
+          UPLOAD_STEP: Upload CurseForge|Upload Modrinth + CurseForge
           DRY_RUN: ${{ inputs.dry_run }}
         run: node scripts/same_day_guard.mjs
 
-      - name: Upload Modrinth + CurseForge
+      - name: Upload CurseForge
         if: ${{ inputs.dry_run != 'true' }}
         env:
-          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
           CURSEFORGE_TOKEN: ${{ secrets.CURSEFORGE_TOKEN }}
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
-          MODRINTH_ID: ${{ vars.MODRINTH_ID || 'cq7XqCTD' }}
           CURSEFORGE_ID: ${{ vars.CURSEFORGE_ID || '1483836' }}
           VERSION: ${{ steps.ver.outputs.version }}
           JAR: ${{ steps.jar.outputs.path }}
-          PLATFORMS: ${{ inputs.platforms || 'both' }}
         shell: bash
         run: |
           set -euo pipefail
+          test -n "${CURSEFORGE_ID:-}" || { echo "Set the repo variable CURSEFORGE_ID" >&2; exit 1; }
           node <<'NODE'
           const fs = require('fs');
           const path = require('path');
           const meta = require('./.github/scripts/detect-jar-meta.js');
           const version = process.env.VERSION;
           const jar = process.env.JAR;
-          const { loaders, gameVersions } = meta.detectRequired(jar, version);
-          const platforms = (process.env.PLATFORMS || 'both').toLowerCase();
-          if (!['both', 'modrinth', 'curseforge'].includes(platforms)) throw new Error('platforms must be modrinth, curseforge or both');
-          const doModrinth = platforms !== 'curseforge';
-          const doCurse = platforms !== 'modrinth';
-          if (doModrinth && !process.env.MODRINTH_TOKEN) throw new Error('MODRINTH_TOKEN secret is missing');
-          if (doCurse && !process.env.CURSEFORGE_TOKEN) throw new Error('CURSEFORGE_TOKEN secret is missing');
+          const { gameVersions } = meta.detectRequired(jar, version);
+          if (!process.env.CURSEFORGE_TOKEN) throw new Error('CURSEFORGE_TOKEN secret is missing');
 
           // This version's own notes (patchnotes/<version>.md), never the whole history.
           const notesFile = path.join('patchnotes', `${version}.md`);
           const changelog = fs.existsSync(notesFile) ? fs.readFileSync(notesFile, 'utf8') : `Release ${version}`;
           const fileName = path.basename(jar);
           const bytes = fs.readFileSync(jar);
-
-          async function modrinth() {
-            const existing = await fetch(
-              `https://api.modrinth.com/v2/project/${process.env.MODRINTH_ID}/version`,
-              { headers: { Authorization: process.env.MODRINTH_TOKEN, 'User-Agent': 'MeherBenSalem/LPCF publish' } },
-            );
-            if (existing.ok) {
-              const list = await existing.json();
-              if (Array.isArray(list) && list.some((v) => v.version_number === version)) {
-                console.log(`Modrinth ${version} already exists; skipping`);
-                return;
-              }
-            } else {
-              throw new Error('Modrinth project lookup ' + existing.status + ' ' + (await existing.text()).slice(0, 300));
-            }
-            const body = {
-              name: `LPCF ${version}`,
-              version_number: version,
-              changelog,
-              dependencies: meta.MODRINTH_DEPENDENCIES,
-              game_versions: gameVersions,
-              version_type: /-/.test(version) ? 'beta' : 'release',
-              loaders,
-              featured: true,
-              status: 'listed',
-              project_id: process.env.MODRINTH_ID,
-              file_parts: ['file_0'],
-              primary_file: 'file_0',
-            };
-            const form = new FormData();
-            form.append('data', JSON.stringify(body));
-            form.append('file_0', new Blob([bytes]), fileName);
-            const res = await fetch('https://api.modrinth.com/v2/version', {
-              method: 'POST',
-              headers: { Authorization: process.env.MODRINTH_TOKEN, 'User-Agent': 'MeherBenSalem/LPCF publish' },
-              body: form,
-            });
-            const text = await res.text();
-            if (!res.ok) throw new Error('Modrinth ' + res.status + ' ' + text.slice(0, 500));
-            console.log('Modrinth OK', fileName, text.slice(0, 160));
-          }
 
           function flattenVersions(payload) {
             const data = payload?.data ?? payload;
@@ -300,8 +244,7 @@ jobs:
           }
 
           (async () => {
-            if (doModrinth) await modrinth(); else console.log('Skipping Modrinth');
-            if (doCurse) await curseforge(); else console.log('Skipping CurseForge');
+            await curseforge();
           })().catch((e) => { console.error(e); process.exit(1); });
           NODE
 
@@ -315,34 +258,3 @@ jobs:
           node -e "const m=require('./.github/scripts/detect-jar-meta.js');console.log('loaders', m.LOADERS.join(', '));console.log('game versions', m.GAME_VERSIONS.join(', '))"
 
       # CurseForge has no API for the project description: paste marketing/curseforge/description.md there by hand.
-      - name: Update Modrinth listing
-        if: ${{ inputs.update_listing == 'true' && inputs.dry_run != 'true' }}
-        env:
-          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
-          MODRINTH_ID: ${{ vars.MODRINTH_ID || 'cq7XqCTD' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          node <<'NODE'
-          const fs = require('fs');
-          (async () => {
-            const headers = { Authorization: process.env.MODRINTH_TOKEN, 'User-Agent': 'MeherBenSalem/LPCF publish' };
-            const project = `https://api.modrinth.com/v2/project/${process.env.MODRINTH_ID}`;
-            const body = fs.readFileSync('marketing/curseforge/description.md', 'utf8');
-            const description = fs.readFileSync('marketing/curseforge/summary.txt', 'utf8').trim();
-            const res = await fetch(project, {
-              method: 'PATCH',
-              headers: { ...headers, 'Content-Type': 'application/json' },
-              body: JSON.stringify({ title: 'LPCF: Chat, Nametags & Bubbles', body, description }),
-            });
-            if (!res.ok) throw new Error('Modrinth listing ' + res.status + ' ' + (await res.text()).slice(0, 300));
-            console.log('Modrinth title, description and summary updated');
-            const icon = await fetch(`${project}/icon?ext=png`, {
-              method: 'PATCH',
-              headers: { ...headers, 'Content-Type': 'image/png' },
-              body: fs.readFileSync('marketing/images/icon.png'),
-            });
-            if (!icon.ok) throw new Error('Modrinth icon ' + icon.status + ' ' + (await icon.text()).slice(0, 300));
-            console.log('Modrinth icon updated');
-          })().catch((e) => { console.error(e); process.exit(1); });
-          NODE

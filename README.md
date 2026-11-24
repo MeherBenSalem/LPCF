@@ -59,7 +59,7 @@ with their comments. Your head nametags keep showing your old `nametag-format`, 
 header/footer and join/quit messages start disabled on upgraded servers (they may clash with a plugin you already
 use for that); new installs get them enabled.
 
-Download from [Modrinth](https://modrinth.com/plugin/lpcf-chat-formatter) or CurseForge.
+Download from CurseForge.
 
 ## Commands and permissions
 
@@ -133,9 +133,9 @@ scripts/smoke_boot.sh paper 26.3 build/libs/LPCF-<version>.jar modrinth:luckperm
 
 ## Publishing (maintainers)
 
-`.github/workflows/publish.yml` uploads `releases/LPCF-<version>.jar` to Modrinth and CurseForge (Actions > Publish >
-Run workflow, or a `v*.*.*` tag). Secrets: `MODRINTH_TOKEN`, `CURSEFORGE_TOKEN`, `CURSEFORGE_API_KEY`. Project ids
-default to Modrinth `cq7XqCTD` and CurseForge `1483836` (override with the `MODRINTH_ID` / `CURSEFORGE_ID` variables).
+`.github/workflows/publish.yml` uploads `releases/LPCF-<version>.jar` to CurseForge only (Actions > Publish > Run
+workflow, or a `v*.*.*` tag). Secrets: `CURSEFORGE_TOKEN` (upload) and `CURSEFORGE_API_KEY` (same-day guard). The
+project id defaults to CurseForge `1483836` (override with the `CURSEFORGE_ID` variable).
 A same-day guard stops a second release on the same day (Africa/Tunis); prove a release first with `dry_run=true`.
 
 ## Links
